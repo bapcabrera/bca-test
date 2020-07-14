@@ -10,12 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: danhellem/github-actions-issue-to-work-item@master
+      - uses: franzdiebold/github-env-vars-action@v1.1.2
         env:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
           ado_organization: "baptistecabrera"
           ado_project: "Bca"
-          ado_area_path: "Bca\\bca-test"
+          ado_area_path: "Bca\\$GITHUB_REPOSITORY_NAME"
           ado_wit: "Bug"
           ado_new_state: "New"
           ado_close_state: "Done"
