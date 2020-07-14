@@ -14,9 +14,9 @@ jobs:
         env:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
-          ado_organization: "baptistecabrera"
+          ado_organization: "$GITHUB_REPOSITORY_OWNER"
           ado_project: "Bca"
-          ado_area_path: "Bca\\${{ GITHUB_REPOSITORY_NAME }}"
+          ado_area_path: "Bca\\bca-test"
           ado_wit: "Bug"
           ado_new_state: "New"
           ado_close_state: "Done"
