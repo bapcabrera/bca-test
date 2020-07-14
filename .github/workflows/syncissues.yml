@@ -14,7 +14,7 @@ jobs:
         env:
           ado_token: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           github_token: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
-          ado_organization: $(echo "$GITHUB_REPOSITORY" | awk -F / '{print $1}')
+          ado_organization: ${{ env.GITHUB_REPOSITORY_OWNER }}
           ado_project: "Bca"
           ado_area_path: "Bca\\bca-test"
           ado_wit: "Bug"
