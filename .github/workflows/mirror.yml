@@ -14,6 +14,6 @@ jobs:
     - name: mirror-repository
       uses: spyoungtech/mirror-action@v0.3.0
       with:
-        REMOTE: "https://baptistecabrera@dev.azure.com/baptistecabrera/Bca/_git/bca-test"
+        REMOTE: "https://baptistecabrera@dev.azure.com/baptistecabrera/Bca/_git/bca-test.git"
         GIT_USERNAME: "baptiste.cabrera@outlook.com"
         GIT_PASSWORD: ${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}
