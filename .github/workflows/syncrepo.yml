@@ -8,11 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: mirror-repository
-      uses: spyoungtech/mirror-action@v0.3.0
-      with:
-        REMOTE: "https://baptistecabrera@dev.azure.com/baptistecabrera/Bca/_git/bca-test"
-        GIT_PASSWORD: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
+      - uses: franzdiebold/github-env-vars-action@v1.1.2
+      - uses: actions/checkout@v1
+      - name: mirror-repository
+        uses: spyoungtech/mirror-action@v0.3.0
+        with:
+          REMOTE: "https://${{ env.GITHUB_REPOSITORY_OWNER }}@dev.azure.com/${{ env.GITHUB_REPOSITORY_OWNER }}/${{ secrets.ADO_PROJECT_NAME }}/_git/${{ env.GITHUB_REPOSITORY_NAME }}"
+          GIT_PASSWORD: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
