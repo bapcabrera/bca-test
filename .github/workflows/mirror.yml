@@ -9,9 +9,9 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@vmaster
       - name: Mirror Repo
-        uses: spyoungtech/mirror-action@v0.3.0
+        uses: spyoungtech/mirror-action@master
         with:
           REMOTE: "https://dev.azure.com/baptistecabrera/Bca/_git/bca-test"
           GIT_USERNAME: "baptiste.cabrera@outlook.com"
