@@ -1,0 +1,17 @@
+name: Sync repo to Azure DevOps
+
+on:
+  push:
+    branches:
+    - '**'
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror Repo
+        uses: spyoungtech/mirror-action@master
+        with:
+          REMOTE: "https://dev.azure.com/baptistecabrera/Bca/_git/bca-test"
+          GIT_USERNAME: "baptiste.cabrera@outlook.com"
+          GIT_PASSWORD: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
