@@ -8,7 +8,6 @@ on:
 jobs:
   mirror:
     runs-on: ubuntu-latest
-
     steps:
       - uses: franzdiebold/github-env-vars-action@v1.1.2
       - uses: actions/checkout@v1
@@ -17,6 +16,4 @@ jobs:
         with:
           REMOTE: "https://dev.azure.com/baptistecabrera/Bca/_git/bca-test"
           GIT_USERNAME: "baptiste.cabrera@outlook.com"
-          GIT_PASSWORD: "PAT"
-        env:
-          PAT: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
+          GIT_PASSWORD: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
