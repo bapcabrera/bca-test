@@ -3,7 +3,7 @@ name: Sync repo to Azure DevOps
 on:
   push:
     branches:
-    - 'staging'
+    - 'none'
 
 jobs:
   mirror:
