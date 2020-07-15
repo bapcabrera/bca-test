@@ -1,4 +1,4 @@
-name: Mirror repo to Azure DevOps
+name: Sync repo to Azure DevOps
 
 on:
   push:
