@@ -15,7 +15,7 @@ jobs:
         uses: spyoungtech/mirror-action@v0.3.0
         with:
           REMOTE: "https://${{ env.GITHUB_REPOSITORY_OWNER }}@dev.azure.com/${{ env.GITHUB_REPOSITORY_OWNER }}/${{ secrets.ADO_PROJECT_NAME }}/_git/${{ env.GITHUB_REPOSITORY_NAME }}"
-          GIT_PASSWORD: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
+          GIT_PASSWORD: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}2"
           PUSH_ALL_REFS: false
       - name: The job has failed
         uses: stefanstranger/azuredevops-bug-action@v1
