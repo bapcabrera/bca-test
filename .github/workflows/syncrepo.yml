@@ -11,9 +11,23 @@ jobs:
     steps:
       - uses: franzdiebold/github-env-vars-action@v1.1.2
       - uses: actions/checkout@v1
-      - name: mirror-repository
+      - name: Mirror
         uses: spyoungtech/mirror-action@v0.3.0
         with:
           REMOTE: "https://${{ env.GITHUB_REPOSITORY_OWNER }}@dev.azure.com/${{ env.GITHUB_REPOSITORY_OWNER }}/${{ secrets.ADO_PROJECT_NAME }}/_git/${{ env.GITHUB_REPOSITORY_NAME }}"
           GIT_PASSWORD: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
           PUSH_ALL_REFS: false
+      - name: The job has failed
+        uses: stefanstranger/azuredevops-bug-action@v1
+        if: failure()
+        with:
+          OrganizationName: "${{ env.GITHUB_REPOSITORY_OWNER }}"
+          PAT: "PAT"
+          ProjectName: "${{ secrets.ADO_PROJECT_NAME }}"
+          AreaPath: "${{ secrets.ADO_PROJECT_NAME }}\\${{ env.GITHUB_REPOSITORY_NAME }}"
+          IterationPath: "${{ secrets.ADO_PROJECT_NAME }}"
+          GithubToken: "GithubToken"
+          WorkflowFileName: "syncrepo.yml"
+        env:
+          PAT: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
+          GithubToken: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}": 
