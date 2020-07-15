@@ -3,15 +3,15 @@ name: Sync repo to Azure DevOps
 on:
   push:
     branches:
-    - '**'
+    - 'staging'
 
 jobs:
-  build:
+  mirror:
     runs-on: ubuntu-latest
     steps:
       - uses: franzdiebold/github-env-vars-action@v1.1.2
       - uses: actions/checkout@v1
-      - name: mirror-repository
+      - name: Mirror
         uses: spyoungtech/mirror-action@v0.3.0
         with:
           REMOTE: "https://${{ env.GITHUB_REPOSITORY_OWNER }}@dev.azure.com/${{ env.GITHUB_REPOSITORY_OWNER }}/${{ secrets.ADO_PROJECT_NAME }}/_git/${{ env.GITHUB_REPOSITORY_NAME }}"
