@@ -1,0 +1,17 @@
+on:
+  push:
+    branches:
+    - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: mirror-repository
+      uses: spyoungtech/mirror-action@v0.3.0
+      with:
+        REMOTE: "https://dev.azure.com/baptistecabrera/Bca/_git/bca-test"
+        GIT_USERNAME: "baptiste.cabrera@outlook.com"
+        GIT_PASSWORD: ${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}
