@@ -9,7 +9,6 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - uses: franzdiebold/github-env-vars-action@v1.1.2
       - uses: actions/checkout@v1
       - name: Mirror Repo
         uses: spyoungtech/mirror-action@v0.3.0
