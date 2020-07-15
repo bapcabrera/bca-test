@@ -10,10 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Mirror Repo
-      uses: spyoungtech/mirror-action@v0.3.0
-      with:
-        REMOTE: "https://dev.azure.com/baptistecabrera/Bca/_git/bca-test"
-        GIT_USERNAME: "baptiste.cabrera@outlook.com"
-        GIT_PASSWORD: ${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}
+      - uses: franzdiebold/github-env-vars-action@v1.1.2
+      - uses: actions/checkout@v1
+      - name: Mirror Repo
+        uses: spyoungtech/mirror-action@v0.3.0
+        with:
+          REMOTE: "https://dev.azure.com/baptistecabrera/Bca/_git/bca-test"
+          GIT_USERNAME: "baptiste.cabrera@outlook.com"
+          GIT_PASSWORD: "PAT"
+        env:
+          PAT: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
+      - name: The job has failed
+        uses: stefanstranger/azuredevops-bug-action@v1
+        if: failure()
+        with:
+          OrganizationName: "${{ env.GITHUB_REPOSITORY_OWNER }}"
+          PAT: "PAT"
+          ProjectName: "${{ secrets.ADO_PROJECT_NAME }}"
+          AreaPath: "${{ secrets.ADO_PROJECT_NAME }}\\${{ env.GITHUB_REPOSITORY_NAME }}"
+          IterationPath: "${{ secrets.ADO_PROJECT_NAME }}"
+          GithubToken: "GithubToken"
+          WorkflowFileName: "mirror.yml"
+        env:
+          PAT: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
+          GithubToken: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
