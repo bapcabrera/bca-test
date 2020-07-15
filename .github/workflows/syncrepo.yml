@@ -30,4 +30,4 @@ jobs:
           WorkflowFileName: "syncrepo.yml"
         env:
           PAT: "${{ secrets.ADO_PERSONAL_ACCESS_TOKEN }}"
-          GithubToken: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}":
+          GithubToken: "${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}"
