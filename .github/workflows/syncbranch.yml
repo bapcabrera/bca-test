@@ -1,4 +1,4 @@
-name: Sync staging to Azure DevOps
+name: Sync branches to Azure DevOps
 
 on:
   push:
