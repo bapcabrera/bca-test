@@ -34,15 +34,15 @@ jobs:
     vmImage: $(pool.vmImage)
   steps:
   - task: CopyFiles@2
-  displayName: 'Copy Sources '
-  inputs:
-    SourceFolder: 'src/$(Build.DefinitionName)'
-    Contents: |
-     **
-     !**\.gitignore
-    TargetFolder: '$(BuildSourcesDirectory)'
-    CleanTargetFolder: true
-    OverWrite: true
+    displayName: 'Copy Sources '
+    inputs:
+      SourceFolder: 'src/$(Build.DefinitionName)'
+      Contents: |
+        **
+        !**\.gitignore
+      TargetFolder: '$(BuildSourcesDirectory)'
+      CleanTargetFolder: true
+      OverWrite: true
   - powershell: |
       Write-Host '$(BuildArtifacts)'
     displayName: 'Test'
