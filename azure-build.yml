@@ -6,8 +6,8 @@ trigger:
     - test
   paths:
     exclude:
-    - build-pipeline.yml
-    - release-pipeline.yml
+    - azure-build.yml
+    - azure-release.yml
 
 variables:
 - group: "Build"
@@ -36,7 +36,7 @@ jobs:
   - task: CopyFiles@2
   displayName: 'Copy Sources '
   inputs:
-    SourceFolder: '/src/$(Build.DefinitionName)'
+    SourceFolder: 'src/$(Build.DefinitionName)'
     Contents: |
      **
      !**\.gitignore
