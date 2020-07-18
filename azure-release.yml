@@ -44,5 +44,5 @@ jobs:
             Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
           displayName: 'Test'
         - powershell: |
-            Get-ChildItem '$(PIPELINE.WORKSPACE)/Build' -Recurse
+            Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
           displayName: 'List'
