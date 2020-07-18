@@ -28,63 +28,78 @@ variables:
 
 stages: 
 - stage: Build
-  displayName: Build and Test
+  displayName: Stage Build and Test
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
-  steps:
-  - task: CopyFiles@2
-    displayName: 'Copy Sources '
-    inputs:
-      SourceFolder: 'src/$(Build.DefinitionName)'
-      Contents: |
-        **
-        !**\.gitignore
-      TargetFolder: '$(BuildSourcesDirectory)'
-      CleanTargetFolder: true
-      OverWrite: true
-  - powershell: |
-      Write-Host '$(BuildArtifacts)'
-    displayName: 'Test'
-  - powershell: |
-        Write-Host '$(choco-pack)'
-        #Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
-    displayName: 'Install Bca.Nuget'
-  - task: PublishPipelineArtifact@1
-    displayName: 'Publish Pipeline Artifact'
-    inputs:
-      targetPath: '$(BuildSourcesDirectory)'
-      artifact: 'Sources'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranchName'], 'develop'))
+  - jobs:
+    job: Build
+    displayName: Job Build and Test
+    steps:
+    - task: CopyFiles@2
+      displayName: 'Copy Sources '
+      inputs:
+        SourceFolder: 'src/$(Build.DefinitionName)'
+        Contents: |
+          **
+          !**\.gitignore
+        TargetFolder: '$(BuildSourcesDirectory)'
+        CleanTargetFolder: true
+        OverWrite: true
+    - powershell: |
+        Write-Host '$(BuildArtifacts)'
+      displayName: 'Test'
+    - powershell: |
+          Write-Host '$(choco-pack)'
+          #Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
+      displayName: 'Install Bca.Nuget'
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Pipeline Artifact'
+      inputs:
+        targetPath: '$(BuildSourcesDirectory)'
+        artifact: 'Sources'
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranchName'], 'develop'))
 
 - stage: NotMaster
+  displayName : Stage Not Master
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
-  steps:
-  - powershell: |
-      Write-Host 'Hi'
-    displayName: 'Test'
+  - jobs:
+    job: NotMaster
+    displayName: Job Not Master
+    steps:
+    - powershell: |
+        Write-Host 'Hi'
+      displayName: 'Test'
 
 - stage: NotPR
-  pool:
-    name: $(poolName)
-    vmImage: $(poolVmImage)
+  displayName: Stage not a Pull Request 
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-  steps:
-  - powershell: |
-      Write-Host 'Hi'
-    displayName: 'Test'
+  pool:
+    name: $(poolName)
+    vmImage: $(poolVmImage)
+  - jobs: 
+    job: NotPR
+    displayName: Job not a Pull Request
+    steps:
+    - powershell: |
+        Write-Host 'Hi'
+      displayName: 'Test'
 
 - stage: All
+  displayName: Stage Run for all
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
   dependsOn: Build
-  steps:
-  - powershell: |
-      Write-Host 'Hi'
-    displayName: 'Test'
+  - jobs:
+    job: All
+    displayName: Job run for all
+    steps:
+    - powershell: |
+        Write-Host 'Hi'
+      displayName: 'Test'
