@@ -9,7 +9,7 @@ variables:
 resources:
   pipelines:
   - pipeline: Build
-    source: $(Build.DefinitionName)
+    source: '$(Build.DefinitionName)'
     trigger: 
       branches:
       - test
