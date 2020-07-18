@@ -4,8 +4,6 @@ trigger:
 variables:
 - name: buildName
   value: ${{ replace(variables['Build.DefinitionName'],'.Release','') }}
-- name: relName
-  value: ${{ replace(variables['Release.DefinitionName'],'Release','') }} 
 - name: 'pool.name'
   value: 'Azure Pipelines'
 - name: 'pool.vmImage'
@@ -21,22 +19,21 @@ resources:
       - test2
 
 stages:
-  - stage: PreRelease
-    displayName: PreRelease
-    environment: PreRelease
+  - stage: Stage1
+    displayName: Stage 1
     pool:
       name: $(pool.name)
       vmImage: $(pool.vmImage)
     jobs:
     - deployment: Deploy
       displayName: Deploy It
+      environment: PreRelease
       strategy:
         runOnce:
           deploy:
             steps:           
             - powershell: |
                 Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
-                Write-Host 'Release.DefinitionName: $(Release.DefinitionName)'
                 Write-Host 'buildName: $(buildName)'
                 Write-Host 'relName: $(relName)'
                 Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
