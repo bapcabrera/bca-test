@@ -32,8 +32,8 @@ stages:
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
-  - jobs:
-    job: Build
+  jobs:
+  - job: Build
     displayName: Job Build and Test
     steps:
     - task: CopyFiles@2
@@ -67,8 +67,8 @@ stages:
     vmImage: $(poolVmImage)
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
-  - jobs:
-    job: NotMaster
+  jobs:
+  - job: NotMaster
     displayName: Job Not Master
     steps:
     - powershell: |
@@ -82,8 +82,8 @@ stages:
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
-  - jobs: 
-    job: NotPR
+  jobs: 
+  - job: NotPR
     displayName: Job not a Pull Request
     steps:
     - powershell: |
@@ -96,8 +96,8 @@ stages:
     name: $(poolName)
     vmImage: $(poolVmImage)
   dependsOn: Build
-  - jobs:
-    job: All
+  jobs:
+  - job: All
     displayName: Job run for all
     steps:
     - powershell: |
