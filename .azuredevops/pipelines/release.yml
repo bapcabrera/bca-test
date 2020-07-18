@@ -12,7 +12,7 @@ variables:
 resources:
   pipelines:
   - pipeline: Build
-    source: ${{ variables['buildName'] }}'
+    source: $(buildName)
     trigger: 
       branches:
       - test
