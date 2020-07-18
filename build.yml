@@ -14,6 +14,10 @@ variables:
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
+- name: 'pool.name'
+  value: 'Azure Pipelines'
+- name: 'pool.vmImage'
+  value: 'vs2017-win2016'
 - name: choco-pack
   value: 'false'
 - name: choco-push
@@ -24,10 +28,10 @@ variables:
   value: 'false'
 
 jobs: 
-pool:
-  name: Azure Pipelines
-  vmImage: vs2017-win2016 
 - job: Build
+  pool:
+    name: $(pool.name)
+    vmImage: $(pool.vmImage)
   steps:
   - powershell: | 
       Write-Host '$(BuildArtifacts)'
@@ -37,6 +41,9 @@ pool:
     displayName: 'Install Bca.Nuget'
 
 - job: NotMaster
+  pool:
+    name: $(pool.name)
+    vmImage: $(pool.vmImage)
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
   steps:
@@ -45,6 +52,9 @@ pool:
     displayName: 'Test'
 
 - job: NotPR
+  pool:
+    name: $(pool.name)
+    vmImage: $(pool.vmImage)
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   steps:
@@ -53,6 +63,9 @@ pool:
     displayName: 'Test'
 
 - job: All
+  pool:
+    name: $(pool.name)
+    vmImage: $(pool.vmImage)
   dependsOn: Build
   steps:
   - powershell: | 
