@@ -9,7 +9,7 @@ variables:
 resources:
   pipelines:
   - pipeline: Build
-    source: variables['Build.DefinitionName']
+    source: ${{ variables['Build.DefinitionName'] }}
     trigger: 
       branches:
       - test
