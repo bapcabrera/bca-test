@@ -29,6 +29,7 @@ variables:
 
 jobs: 
 - job: Build
+  displayName: Build and Test
   pool:
     name: $(pool.name)
     vmImage: $(pool.vmImage)
