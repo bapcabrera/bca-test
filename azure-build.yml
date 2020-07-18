@@ -6,7 +6,6 @@ trigger:
     - test
   paths:
     exclude:
-    #- azure-build.yml
     - azure-release.yml
 
 variables:
@@ -14,9 +13,9 @@ variables:
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
-- name: 'pool.name'
+- name: 'poolName'
   value: 'Azure Pipelines'
-- name: 'pool.vmImage'
+- name: 'poolVmImage'
   value: 'vs2017-win2016'
 - name: choco-pack
   value: 'false'
@@ -31,8 +30,8 @@ jobs:
 - job: Build
   displayName: Build and Test
   pool:
-    name: $(pool.name)
-    vmImage: $(pool.vmImage)
+    name: $(poolName)
+    vmImage: $(poolVmImage)
   steps:
   - task: CopyFiles@2
     displayName: 'Copy Sources '
@@ -59,8 +58,8 @@ jobs:
 
 - job: NotMaster
   pool:
-    name: $(pool.name)
-    vmImage: $(pool.vmImage)
+    name: $(poolName)
+    vmImage: $(poolVmImage)
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
   steps:
@@ -70,8 +69,8 @@ jobs:
 
 - job: NotPR
   pool:
-    name: $(pool.name)
-    vmImage: $(pool.vmImage)
+    name: $(poolName)
+    vmImage: $(poolVmImage)
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   steps:
@@ -81,8 +80,8 @@ jobs:
 
 - job: All
   pool:
-    name: $(pool.name)
-    vmImage: $(pool.vmImage)
+    name: $(poolName)
+    vmImage: $(poolVmImage)
   dependsOn: Build
   steps:
   - powershell: |
