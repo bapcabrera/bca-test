@@ -33,12 +33,28 @@ jobs:
     name: $(pool.name)
     vmImage: $(pool.vmImage)
   steps:
+  - task: CopyFiles@2
+  displayName: 'Copy Sources '
+  inputs:
+    SourceFolder: '/'
+    Contents: |
+     **
+     !**\.gitignore
+    TargetFolder: '$(BuildSourcesDirectory)'
+    CleanTargetFolder: true
+    OverWrite: true
   - powershell: | 
       Write-Host '$(BuildArtifacts)'
     displayName: 'Test'
   - powershell: |
         #Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
     displayName: 'Install Bca.Nuget'
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Pipeline Artifact'
+    inputs:
+      targetPath: '$(BuildSourcesDirectory)'
+      artifact: Sources
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranchName'], 'develop'))
 
 - job: NotMaster
   pool:

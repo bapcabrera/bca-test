@@ -1,0 +1,43 @@
+trigger:
+- none
+
+variables:
+- name: 'pool.name'
+  value: 'Azure Pipelines'
+- name: 'pool.vmImage'
+  value: 'vs2017-win2016'
+
+resources:
+  pipelines:
+  - pipeline: Build
+    source: Bca.Spdx
+    trigger: 
+      branches:
+      - test
+
+jobs:
+- deployment: Deploy
+  displayName: Deploy It
+  environment: dev
+  pool:
+    name: $(pool.name)
+    vmImage: $(pool.vmImage)
+  strategy:
+    runOnce:
+      deploy:
+        steps:          
+        - download: Build
+          artifact: Sources  
+        - powershell: |
+            Write-Host '$(resources.pipeline.Build.projectID)'
+            Write-Host '$(resources.pipeline.Build.pipelineName)'
+            Write-Host '$(resources.pipeline.Build.pipelineID)'
+            Write-Host '$(resources.pipeline.Build.runName)'
+            Write-Host '$(resources.pipeline.Build.runID)'
+            Write-Host '$(resources.pipeline.Build.runURI)'
+            Write-Host '$(resources.pipeline.Build.sourceBranch)'
+            Write-Host '$(resources.pipeline.Build.sourceCommit)'
+            Write-Host '$(resources.pipeline.Build.sourceProvider)'
+            Write-Host '$(resources.pipeline.Build.requestedFor)'
+            Write-Host '$(resources.pipeline.Build.requestedForID)'
+          displayName: 'Test'
