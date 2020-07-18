@@ -9,12 +9,12 @@ trigger:
     - azure-release.yml
 
 variables:
+  poolName: 'Azure Pipelines'
+  poolVmImage: 'vs2017-win2016'
 - group: "Build"
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
-  poolName: 'Azure Pipelines'
-  poolVmImage: 'vs2017-win2016'
 
 stages: 
 - stage: Build
