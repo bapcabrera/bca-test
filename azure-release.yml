@@ -3,7 +3,7 @@ trigger:
 
 variables:
 - name: buildName
-  value: ${{ replace(variables['Release.DefinitionName'],'.Release','') }} 
+  value: ${{ replace(variables['Release.DefinitionName'],'\.Release','') }} 
 - name: 'pool.name'
   value: 'Azure Pipelines'
 - name: 'pool.vmImage'
@@ -12,7 +12,7 @@ variables:
 resources:
   pipelines:
   - pipeline: Build
-    source: Bca.Test
+    source: Bca.Spdx
     trigger: 
       branches:
       - test
