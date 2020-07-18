@@ -6,8 +6,8 @@ trigger:
     - test
   paths:
     exclude:
-    - build-pipeline.yml
-    - release-pipeline.yml
+    #- azure-build.yml
+    - azure-release.yml
 
 variables:
 - group: "Build"
@@ -34,15 +34,15 @@ jobs:
     vmImage: $(pool.vmImage)
   steps:
   - task: CopyFiles@2
-  displayName: 'Copy Sources '
-  inputs:
-    SourceFolder: '/src/$(Build.DefinitionName)'
-    Contents: |
-     **
-     !**\.gitignore
-    TargetFolder: '$(BuildSourcesDirectory)'
-    CleanTargetFolder: true
-    OverWrite: true
+    displayName: 'Copy Sources '
+    inputs:
+      SourceFolder: 'src/$(Build.DefinitionName)'
+      Contents: |
+        **
+        !**\.gitignore
+      TargetFolder: '$(BuildSourcesDirectory)'
+      CleanTargetFolder: true
+      OverWrite: true
   - powershell: |
       Write-Host '$(BuildArtifacts)'
     displayName: 'Test'
@@ -53,7 +53,7 @@ jobs:
     displayName: 'Publish Pipeline Artifact'
     inputs:
       targetPath: '$(BuildSourcesDirectory)'
-      artifact: Sources
+      artifact: 'Sources'
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranchName'], 'develop'))
 
 - job: NotMaster
