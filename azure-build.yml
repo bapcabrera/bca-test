@@ -36,14 +36,14 @@ jobs:
   - task: CopyFiles@2
   displayName: 'Copy Sources '
   inputs:
-    SourceFolder: '/'
+    SourceFolder: '/src/$(Build.DefinitionName)'
     Contents: |
      **
      !**\.gitignore
     TargetFolder: '$(BuildSourcesDirectory)'
     CleanTargetFolder: true
     OverWrite: true
-  - powershell: | 
+  - powershell: |
       Write-Host '$(BuildArtifacts)'
     displayName: 'Test'
   - powershell: |
@@ -63,7 +63,7 @@ jobs:
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
   steps:
-  - powershell: | 
+  - powershell: |
       Write-Host 'Hi'
     displayName: 'Test'
 
@@ -74,7 +74,7 @@ jobs:
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   steps:
-  - powershell: | 
+  - powershell: |
       Write-Host 'Hi'
     displayName: 'Test'
 
@@ -84,6 +84,6 @@ jobs:
     vmImage: $(pool.vmImage)
   dependsOn: Build
   steps:
-  - powershell: | 
+  - powershell: |
       Write-Host 'Hi'
     displayName: 'Test'
