@@ -23,11 +23,11 @@ variables:
 - name: nuget-push
   value: 'false'
 
-jobs:  
+jobs: 
+pool:
+  name: Azure Pipelines
+  vmImage: vs2017-win2016 
 - job: Build
-  pool:
-    name: Azure Pipelines
-    vmImage: vs2017-win2016
   steps:
   - powershell: | 
       Write-Host '$(BuildArtifacts)'
@@ -39,8 +39,6 @@ jobs:
 - job: NotMaster
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
-  pool:
-    name: Azure Pipelines
   steps:
   - powershell: | 
       Write-Host 'Hi'
@@ -49,8 +47,6 @@ jobs:
 - job: NotPR
   dependsOn: Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-  pool:
-    name: Azure Pipelines
   steps:
   - powershell: | 
       Write-Host 'Hi'
@@ -58,8 +54,6 @@ jobs:
 
 - job: All
   dependsOn: Build
-  pool:
-    name: Azure Pipelines
   steps:
   - powershell: | 
       Write-Host 'Hi'
