@@ -2,8 +2,7 @@ trigger:
 - none
 
 variables:
-- name: buildName
-  value: ${{ replace(variables['Build.DefinitionName'],'.Release','') }}
+- buildName: ${{ replace(variables['Build.DefinitionName'],'.Release','') }}
 - name: 'pool.name'
   value: 'Azure Pipelines'
 - name: 'pool.vmImage'
