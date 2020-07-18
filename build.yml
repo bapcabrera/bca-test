@@ -28,7 +28,6 @@ jobs:
   pool:
     name: Azure Pipelines
     specification: vs2017-win2016
-    demands: cmd
   steps:
   - powershell: | 
       Write-Host '$(BuildArtifacts)'
