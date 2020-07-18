@@ -13,18 +13,8 @@ variables:
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
-- name: 'poolName'
-  value: 'Azure Pipelines'
-- name: 'poolVmImage'
-  value: 'vs2017-win2016'
-- name: choco-pack
-  value: 'false'
-- name: choco-push
-  value: 'false'
-- name: nuget-pack
-  value: 'false'
-- name: nuget-push
-  value: 'false'
+  poolName: 'Azure Pipelines'
+  poolVmImage: 'vs2017-win2016'
 
 stages: 
 - stage: Build
