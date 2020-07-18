@@ -3,7 +3,9 @@ trigger:
 
 variables:
 - name: buildName
-  value: ${{ replace(variables['Buil.DefinitionName'],'Release','') }} 
+  value: ${{ replace(variables['Buil.DefinitionName'],'Release','') }}
+- name: relName
+  value: ${{ replace(variables['Release.DefinitionName'],'Release','') }} 
 - name: 'pool.name'
   value: 'Azure Pipelines'
 - name: 'pool.vmImage'
@@ -31,6 +33,7 @@ jobs:
         steps:           
         - powershell: |
             Write-Host 'buildName: $(buildName)'
+            Write-Host 'relName: $(relName)'
             Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
             Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
             Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
