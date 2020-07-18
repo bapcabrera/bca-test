@@ -47,6 +47,7 @@ jobs:
       Write-Host '$(BuildArtifacts)'
     displayName: 'Test'
   - powershell: |
+        Write-Host '$(choco-pack)'
         #Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
     displayName: 'Install Bca.Nuget'
   - task: PublishPipelineArtifact@1
