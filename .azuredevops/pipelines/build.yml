@@ -47,7 +47,7 @@ stages:
       displayName: 'Publish Pipeline Artifact'
       inputs:
         targetPath: '$(BuildSourcesDirectory)'
-        artifact: '$(Build.DefinitionName)'
+        artifact: 'Build'
       condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranchName'], 'develop'))
 
 - stage: NotMaster
