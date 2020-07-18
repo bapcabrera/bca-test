@@ -26,8 +26,8 @@ variables:
 - name: nuget-push
   value: 'false'
 
-jobs: 
-- job: Build
+stages: 
+- stage: Build
   displayName: Build and Test
   pool:
     name: $(poolName)
@@ -57,7 +57,7 @@ jobs:
       artifact: 'Sources'
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranchName'], 'develop'))
 
-- job: NotMaster
+- stage: NotMaster
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
@@ -68,7 +68,7 @@ jobs:
       Write-Host 'Hi'
     displayName: 'Test'
 
-- job: NotPR
+- stage: NotPR
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
@@ -79,7 +79,7 @@ jobs:
       Write-Host 'Hi'
     displayName: 'Test'
 
-- job: All
+- stage: All
   pool:
     name: $(poolName)
     vmImage: $(poolVmImage)
