@@ -9,7 +9,7 @@ variables:
 resources:
   pipelines:
   - pipeline: Build
-    source: Bca.Test
+    source: Build\Bca.Test
     trigger: 
       branches:
       - test
