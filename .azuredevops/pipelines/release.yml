@@ -13,7 +13,6 @@ resources:
     trigger: 
       branches:
       - test
-      - test2
 
 stages:
   - stage: Stage1
