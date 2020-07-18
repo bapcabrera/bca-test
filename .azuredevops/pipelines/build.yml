@@ -9,8 +9,10 @@ trigger:
     - azure-release.yml
 
 variables:
-  poolName: 'Azure Pipelines'
-  poolVmImage: 'vs2017-win2016'
+- name: 'poolName'
+  value: 'Azure Pipelines'
+- name: 'poolVmImage'
+  value: 'vs2017-win2016'
 - group: "Build"
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
