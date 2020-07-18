@@ -1,0 +1,66 @@
+name: $(Date:yyyyMMdd).$(Rev:r)
+
+trigger:
+  branches:
+    include:
+    - test
+  paths:
+    exclude:
+    - build-pipeline.yml
+    - release-pipeline.yml
+
+variables:
+- group: "Build"
+- group: "Build - Chocolatey"
+- group: "Build - Nuget"
+- group: "GitHub - BapCabrera"
+- name: choco-pack
+  value: 'false'
+- name: choco-push
+  value: 'false'
+- name: nuget-pack
+  value: 'false'
+- name: nuget-push
+  value: 'false'
+
+jobs:  
+- job: Build
+  pool:
+    name: Azure Pipelines
+    demands: cmd
+  steps:
+  - powershell: | 
+      Write-Host '$(BuildArtifacts)'
+    displayName: 'Test'
+  - powershell: |
+        Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
+    displayName: 'Install Bca.Nuget'
+
+- job: NotMaster
+  dependsOn: Build
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
+  pool:
+    name: Azure Pipelines
+  steps:
+  - powershell: | 
+      Write-Host 'Hi'
+    displayName: 'Test'
+
+- job: NotPR
+  dependsOn: Build
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  pool:
+    name: Azure Pipelines
+  steps:
+  - powershell: | 
+      Write-Host 'Hi'
+    displayName: 'Test'
+
+- job: All
+  dependsOn: Build
+  pool:
+    name: Azure Pipelines
+  steps:
+  - powershell: | 
+      Write-Host 'Hi'
+    displayName: 'Test'
