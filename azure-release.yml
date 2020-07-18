@@ -14,6 +14,7 @@ resources:
     trigger: 
       branches:
       - test
+      - test2
 
 jobs:
 - deployment: Deploy
@@ -26,8 +27,8 @@ jobs:
     runOnce:
       deploy:
         steps:          
-        - download: Build
-          artifact: Sources  
+        #- download: Build
+        #  artifact: Sources  
         - powershell: |
             Write-Host '$(resources.pipeline.Build.projectID)'
             Write-Host '$(resources.pipeline.Build.pipelineName)'
