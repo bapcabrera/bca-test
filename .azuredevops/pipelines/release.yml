@@ -3,7 +3,7 @@ trigger:
 
 variables:
 - name: buildName
-  value: ${{ replace(variables['Build.DefinitionName'],'Release','') }}
+  value: ${{ replace(variables['Build.DefinitionName'],'.Release','') }}
 - name: relName
   value: ${{ replace(variables['Release.DefinitionName'],'Release','') }} 
 - name: 'pool.name'
@@ -14,7 +14,7 @@ variables:
 resources:
   pipelines:
   - pipeline: Build
-    source: Bca.Spdx
+    source: $(buildName)
     trigger: 
       branches:
       - test
