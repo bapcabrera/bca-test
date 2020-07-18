@@ -2,11 +2,9 @@ trigger:
 - none
 
 variables:
-  buildName: $[replace(variables['Build.DefinitionName'],'.Release','')]
-- name: 'pool.name'
-  value: 'Azure Pipelines'
-- name: 'pool.vmImage'
-  value: 'vs2017-win2016'
+  buildName: ${{ replace(variables['Build.DefinitionName'],'.Release','') }}
+  poolName: 'Azure Pipelines'
+  poolVmImage: 'vs2017-win2016'
 
 resources:
   pipelines:
@@ -21,8 +19,8 @@ stages:
   - stage: Stage1
     displayName: Stage 1
     pool:
-      name: $(pool.name)
-      vmImage: $(pool.vmImage)
+      name: $(poolName)
+      vmImage: $(poolVmImage)
     jobs:
     - deployment: DeployPreRelease
       displayName: PreRelease Deployment
@@ -79,8 +77,8 @@ stages:
   - stage: Stage2
     displayName: Stage 2
     pool:
-      name: $(pool.name)
-      vmImage: $(pool.vmImage)
+      name: $(poolName)
+      vmImage: $(poolVmImage)
     jobs:
     - deployment: DeployPreRelease
       displayName: PreRelease Deployment
