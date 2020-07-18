@@ -6,7 +6,7 @@ trigger:
     - test
   paths:
     exclude:
-    - azure-build.yml
+    #- azure-build.yml
     - azure-release.yml
 
 variables:
