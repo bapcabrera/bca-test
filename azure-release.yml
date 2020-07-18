@@ -30,19 +30,19 @@ jobs:
       deploy:
         steps:           
         - powershell: |
-            Write-Host '$(buildName)'
-            Write-Host '$(resources.pipeline.Build.projectID)'
-            Write-Host '$(resources.pipeline.Build.pipelineName)'
-            Write-Host '$(resources.pipeline.Build.pipelineID)'
-            Write-Host '$(resources.pipeline.Build.runName)'
-            Write-Host '$(resources.pipeline.Build.runID)'
-            Write-Host '$(resources.pipeline.Build.runURI)'
-            Write-Host '$(resources.pipeline.Build.sourceBranch)'
-            Write-Host '$(resources.pipeline.Build.sourceCommit)'
-            Write-Host '$(resources.pipeline.Build.sourceProvider)'
-            Write-Host '$(resources.pipeline.Build.requestedFor)'
-            Write-Host '$(resources.pipeline.Build.requestedForID)'
+            Write-Host 'buildName: $(buildName)'
+            Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
+            Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
+            Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
+            Write-Host 'runName: $(resources.pipeline.Build.runName)'
+            Write-Host 'runID: $(resources.pipeline.Build.runID)'
+            Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
+            Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
+            Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
+            Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
+            Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
+            Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
           displayName: 'Test'
         - powershell: |
-            Get-ChildItem $(System.ArtifactsDirectory) -Recuse
+            Get-ChildItem $(System.ArtifactsDirectory) -Recurse
           displayName: 'List'
