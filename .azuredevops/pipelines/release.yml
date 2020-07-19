@@ -1,4 +1,4 @@
-name: $(Date:yyyyMMdd).$(Rev:r)
+name: Release-$(Date:yyyyMMdd).$(Rev:r)
 
 trigger:
 - none
