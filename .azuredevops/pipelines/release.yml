@@ -41,7 +41,7 @@ stages:
             inputs:
               command: source
               verbose: true
-              installPackageId: '$(Build.DefinitionName)'
+              installPackageId: '$(resources.pipeline.Build.pipelineName)'
               installPackageVersion: '$(ChocoPackage.Version)'
               installPre: true
               installSource: '$(ChocoFeedUrl)'
@@ -49,7 +49,7 @@ stages:
               sourceSource: '$(ChocoFeedUrl)'
               user: '$(ChocoFeedUserName)'
               password: '$(ChocoFeedPassword)'
-              upgradePackageId: '$(Build.DefinitionName)'
+              upgradePackageId: '$(resources.pipeline.Build.pipelineName)'
               upgradePackageVersion: '$(ChocoPackage.Version)'
               upgradeSource: '$(ChocoFeedUrl)'
             env:
@@ -59,18 +59,18 @@ stages:
             inputs:
               command: install
               verbose: true
-              installPackageId: '$(Build.DefinitionName)'
+              installPackageId: '$(resources.pipeline.Build.pipelineName)'
               installPackageVersion: '$(ChocoPackage.Version)'
               installPre: true
               installSource: '$(ChocoFeedName)'
-              upgradePackageId: '$(Build.DefinitionName)'
+              upgradePackageId: '$(resources.pipeline.Build.pipelineName)'
               upgradePackageVersion: '$(ChocoPackage.Version)'
               upgradeSource: '$(ChocoFeedUrl)'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
           - powershell: |
-              Import-Module $(Build.DefinitionName) -Verbose
-              $Module = Get-Module $(Build.DefinitionName)
+              Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
+              $Module = Get-Module $(resources.pipeline.Build.pipelineName)
               $Module | Format-List *
               Write-Host "##vso[task.setvariable variable=ModulePath]$($Module.ModuleBase)"
               
@@ -85,7 +85,7 @@ stages:
             displayName: 'Publish Test Results'
             inputs:
               testResultsFormat: NUnit
-              testResultsFiles: 'Choco_$(Build.DefinitionName).Tests.xml'
+              testResultsFiles: 'Choco_$(resources.pipeline.Build.pipelineName).Tests.xml'
               searchFolder: '$(System.ArtifactsDirectory)'
               mergeTestResults: true
               failTaskOnFailedTests: true
@@ -94,9 +94,11 @@ stages:
             displayName: 'Promote Package PreRelease View'
             inputs:
               feed: '$(ChocoFeedName)'
-              definition: '$(Build.DefinitionName)'
+              definition: '$(resources.pipeline.Build.pipelineName)'
               version: '$(ChocoPackage.Version)'
-              releaseView: '$(Build.EnvironmentName)'
+              releaseView: 'Prerelease'
+            env:
+              SYSTEM_ACCESSTOKEN: $(system.accesstoken)
   - deployment: ChocoRelease
     displayName: Release Deployment
     environment: Release
@@ -112,20 +114,199 @@ stages:
               Write-Host $Module.ModuleVersion
               Write-Host "##vso[task.setvariable variable=ChocoPackage.Version]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
+          - task: DownloadPackage@1
+            displayName: Download Package
+            inputs:
+              packageType: 'nuget'
+              feed: '/$(ChocoFeedName)'
+              definition: '$(resources.pipeline.Build.pipelineName)'
+              version: '$(ChocoPackage.Version)'
+              extract: false
+              downloadPath: '$(ChocoWorkingPath)'
           - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
             displayName: 'Push Package to Chocolatey.org'
             inputs:
               command: push
               pushWorkingDirectory: '$(ChocoWorkingPath)'
-              pushNupkgFileName: '$(Build.DefinitionName).nupkg'
+              pushNupkgFileName: '$(resources.pipeline.Build.pipelineName).nupkg'
               pushSource: '$(ChocoOrgFeedUrl)'
               pushApikey: '$(ChocoOrgApiKey)'
+          - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
+            displayName: 'Promote package to Release View'
+            inputs:
+              feed: '$(ChocoFeedName)'
+              definition: '$(resources.pipeline.Build.pipelineName)'
+              version: '$(ChocoPackage.Version)'
+              releaseView: 'Release'
+            env:
+              SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+
+stages:
+- stage: NuGet
+  displayName: NuGet
+  condition: eq(variables['NuGet.Skip'], false)
+  jobs:
+  - deployment: NuGetPreReleaseWindows
+    displayName: PreRelease Deployment on Windows
+    environment: PreRelease
+    pool:
+      name: $(ReleasePoolName)
+      vmImage: $(ReleasePoolWindowsVm)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: |
+              $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
+              Write-Host $Module.ModuleVersion
+              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+              Write-Host "##vso[task.setvariable variable=PackageVersion;isOutput=true]$($Module.ModuleVersion.ToString())"
+            displayName: 'Set Package Version'
+          - powershell: |
+              $SecurePassword = ConvertTo-SecureString "$(NugetFeedPassword)" -AsPlainText -Force
+              $Credential = New-Object System.Management.Automation.PSCredential ("$(NugetFeedUserName)", $SecurePassword)
+              
+              Register-PackageSource -ProviderName PowerShellGet -Name $(NugetFeedName) -Location $(NugetFeedUrl) -Trusted -Credential $Credential
+              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(NugetPackage.Version) -Credential $Credential | Install-Module -Credential $Credential
+            displayName: 'Install Module'
+          - powershell: |
+              Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
+              $Module = Get-Module $(resources.pipeline.Build.pipelineName)
+              $Module | Format-List *
+              Write-Host "##vso[task.setvariable variable=ModulePath]$($Module.ModuleBase)"
+              
+              Get-ChildItem -Path $Module.ModuleBase -Recurse
+            displayName: 'Test Module'
+
+  - job: NuGetPromote
+    displayName: Promote Package
+    pool:
+      name: $(ReleasePoolName)
+      vmImage: $(ReleasePoolWindowsVm)
+    environment: PreRelease
+    dependsOn:
+      - NuGetPreReleaseWindows
+    steps:
+    - powershell: |
+        $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
+        Write-Host $Module.ModuleVersion
+        Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+      displayName: 'Set Package Version'
+    - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
+      displayName: 'Promote Package PreRelease View'
+      inputs:
+        feed: '$(NugetFeedName)'
+        definition: '$(resources.pipeline.Build.pipelineName)'
+        version: '$(NugetPackage.Version)'
+        releaseView: 'Prerelease'
+      env:
+        SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+
+  - deployment: NuGetRelease
+    displayName: Release Deployment
+    pool:
+      name: $(ReleasePoolName)
+      vmImage: $(ReleasePoolWindowsVm)
+    environment: Release
+    dependsOn:
+      - NuGetPromote
+    condition: eq(variables['NuGet.Publish'], true)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: |
+              $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
+              Write-Host $Module.ModuleVersion
+              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+            displayName: 'Set Package Version'
+          steps:
+        - task: NuGetCommand@2
+          displayName: 'Push Package to NuGet.Org'
+          inputs:
+            command: push
+            packagesToPush: '$(NugetNupkgPath)'
+            nuGetFeedType: external
+            publishFeedCredentials: Nuget.org
+        - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
+          displayName: 'Promote package to Release View'
+          inputs:
+            feed: '$(NugetFeedName)'
+            definition: '$(resources.pipeline.Build.pipelineName)'
+            version: '$(NugetPackage.Version)'
+            releaseView: 'Release'
+          env:
+            SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+
+stages:
+- stage: PSGallery
+  displayName: PowerShell Gallery
+  condition: eq(variables['PSGal.Skip'], false)
+  jobs:
+  - deployment: PSGalleryPreReleaseWindows
+    displayName: PreRelease Deployment on Windows
+    environment: PreRelease
+    pool:
+      name: $(ReleasePoolName)
+      vmImage: $(ReleasePoolWindowsVm)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: |
+              $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
+              Write-Host $Module.ModuleVersion
+              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+            displayName: 'Set Package Version'
+          - powershell: |
+              $SecurePassword = ConvertTo-SecureString "$(NugetFeedPassword)" -AsPlainText -Force
+              $Credential = New-Object System.Management.Automation.PSCredential ("$(NugetFeedUserName)", $SecurePassword)
+              
+              Register-PackageSource -ProviderName PowerShellGet -Name bca -Location $(NugetFeedUrl) -Trusted -Credential $Credential
+              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(NugetPackage.Version) -Credential $Credential | Install-Module -Credential $Credential
+            displayName: 'Install Module'
+          - powershell: |
+              Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
+              $Module = Get-Module $(resources.pipeline.Build.pipelineName)
+              $Module | Format-List *
+              Write-Host "##vso[task.setvariable variable=ModulePath]$($Module.ModuleBase)"
+              
+              Get-ChildItem -Path $Module.ModuleBase -Recurse
+            displayName: 'Test Module'
+  - deployment: PSGalleryRelease
+    displayName: Release Deployment
+    pool:
+      name: $(ReleasePoolName)
+      vmImage: $(ReleasePoolWindowsVm)
+    environment: Release
+    dependsOn:
+      - PSGalleryPreReleaseWindows
+    condition: eq(variables['PSGal.Publish'], true)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: |
+              $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
+              Write-Host $Module.ModuleVersion
+              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+            displayName: 'Set Package Version'
+          - powershell: |
+              $SecurePassword = ConvertTo-SecureString "$(NugetFeedPassword)" -AsPlainText -Force
+              $Credential = New-Object System.Management.Automation.PSCredential ("$(NugetFeedUserName)", $SecurePassword)
+              
+              Register-PackageSource -ProviderName PowerShellGet -Name bca -Location $(NugetFeedUrl) -Trusted -Credential $Credential
+              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(NugetPackage.Version) -Credential $Credential | Install-Module -Credential $Credential
+            displayName: 'Install Module'
+          - powershell: 'Publish-Module -Name $(resources.pipeline.Build.pipelineName) -NuGetApiKey  ''$(PSGalleryApiKey)'''
+            displayName: 'Publish Module to PowerShell Gallery'
+
 
 
 
 
           - powershell: |
-              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'Build.DefinitionName: $(resources.pipeline.Build.pipelineName)'
               Write-Host 'buildName: $(buildName)'
               Write-Host 'relName: $(relName)'
               Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
@@ -151,7 +332,7 @@ stages:
         deploy:
           steps:           
           - powershell: |
-              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'Build.DefinitionName: $(resources.pipeline.Build.pipelineName)'
               Write-Host 'buildName: $(buildName)'
               Write-Host 'relName: $(relName)'
               Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
@@ -183,7 +364,7 @@ stages:
         deploy:
           steps:           
           - powershell: |
-              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'Build.DefinitionName: $(resources.pipeline.Build.pipelineName)'
               Write-Host 'buildName: $(buildName)'
               Write-Host 'relName: $(relName)'
               Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
@@ -209,7 +390,7 @@ stages:
         deploy:
           steps:           
           - powershell: |
-              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'Build.DefinitionName: $(resources.pipeline.Build.pipelineName)'
               Write-Host 'buildName: $(buildName)'
               Write-Host 'relName: $(relName)'
               Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
