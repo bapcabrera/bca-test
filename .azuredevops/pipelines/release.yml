@@ -325,3 +325,15 @@ stages:
 #          - powershell: |
 #              Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
 #            displayName: 'List'
+#projectID: a4de323a-3d00-4d2a-8047-116570878445
+#pipelineName: Bca.Test
+#pipelineID: 13
+#runName: 20200719.3
+#runID: 172
+#runURI: vstfs:///Build/Build/172
+#sourceBranch: refs/heads/test
+#sourceCommit: 3da9e8462493c0a040ae07ffe1bf8e338ff077c6
+#:sourceProvider TfsGit
+#requestedFor: Baptiste Cabrera
+#requestedForID: 4190257d-f165-46c2-b76d-2889266a3786
+
