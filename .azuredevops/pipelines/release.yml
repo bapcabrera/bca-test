@@ -4,7 +4,10 @@ trigger:
 - none
 
 variables:
-  - group: 
+- group: "YAML - Build"
+- group: "Build - Chocolatey"
+- group: "Build - Nuget"
+
 resources:
   pipelines:
   - pipeline: Build
