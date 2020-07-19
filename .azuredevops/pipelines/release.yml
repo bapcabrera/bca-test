@@ -37,36 +37,25 @@ stages:
               Write-Host $Module.ModuleVersion
               Write-Host "##vso[task.setvariable variable=chocoPackageVersion]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
-          - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
-            displayName: 'Add Chocolatey Source'
+          - task: ChocolateyCommand@0
             inputs:
-              command: source
+              command: 'source'
               verbose: true
-              installPackageId: '$(resources.pipeline.Build.pipelineName)'
-              installPackageVersion: '$(chocoPackageVersion)'
-              installPre: true
-              installSource: '$(ChocoFeedUrl)'
+              sourceOperation: 'add'
               sourceSourceName: '$(ChocoFeedName)'
               sourceSource: '$(ChocoFeedUrl)'
               user: '$(ChocoFeedUserName)'
               password: '$(ChocoFeedPassword)'
-              upgradePackageId: '$(resources.pipeline.Build.pipelineName)'
-              upgradePackageVersion: '$(chocoPackageVersion)'
-              upgradeSource: '$(ChocoFeedUrl)'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
-          - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
-            displayName: 'Install Chocolatey Package'
+          - task: ChocolateyCommand@0
             inputs:
-              command: install
+              command: 'install'
               verbose: true
               installPackageId: '$(resources.pipeline.Build.pipelineName)'
               installPackageVersion: '$(chocoPackageVersion)'
               installPre: true
               installSource: '$(ChocoFeedName)'
-              upgradePackageId: '$(resources.pipeline.Build.pipelineName)'
-              upgradePackageVersion: '$(chocoPackageVersion)'
-              upgradeSource: '$(ChocoFeedUrl)'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
           - powershell: |
@@ -77,11 +66,11 @@ stages:
               
               Get-ChildItem -Path $Module.ModuleBase -Recurse
             displayName: 'Test Module'
-          - task: Pester.PesterRunner.Pester-Task.Pester@10
-            displayName: 'Run Pester Tests'
+          - task: Pester@10
             inputs:
               scriptFolder: '"$(ModulePath)\*"'
               resultsFile: '$(ChocoTestOutputFile)'
+              usePSCore: False
           - task: PublishTestResults@2
             displayName: 'Publish Test Results'
             inputs:
@@ -91,10 +80,10 @@ stages:
               mergeTestResults: true
               failTaskOnFailedTests: true
               testRunTitle: 'Chocolatey Pester Tests'
-          - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
-            displayName: 'Promote Package PreRelease View'
+          - task: rvo-vsts-promotepackage-task@3
             inputs:
               feed: '$(ChocoFeedName)'
+              inputType: 'nameVersion'
               definition: '$(resources.pipeline.Build.pipelineName)'
               version: '$(chocoPackageVersion)'
               releaseView: 'Prerelease'
@@ -124,25 +113,25 @@ stages:
               version: '$(chocoPackageVersion)'
               extract: false
               downloadPath: '$(ChocoWorkingPath)'
-          - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
-            displayName: 'Push Package to Chocolatey.org'
+          - task: ChocolateyCommand@0
             inputs:
-              command: push
+              command: 'push'
+              pushOperation: 'single'
               pushWorkingDirectory: '$(ChocoWorkingPath)'
               pushNupkgFileName: '$(resources.pipeline.Build.pipelineName).nupkg'
+              chocolateySourceType: 'manual'
               pushSource: '$(ChocoOrgFeedUrl)'
               pushApikey: '$(ChocoOrgApiKey)'
-          - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
-            displayName: 'Promote package to Release View'
+          - task: rvo-vsts-promotepackage-task@3
             inputs:
               feed: '$(ChocoFeedName)'
+              inputType: 'nameVersion'
               definition: '$(resources.pipeline.Build.pipelineName)'
               version: '$(chocoPackageVersion)'
               releaseView: 'Release'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
 
-stages:
 - stage: NuGet
   displayName: NuGet
   condition: eq(variables['nugetSkip'], false)
@@ -184,7 +173,6 @@ stages:
     pool:
       name: $(ReleasePoolName)
       vmImage: $(ReleasePoolWindowsVm)
-    environment: PreRelease
     dependsOn:
       - NuGetPreReleaseWindows
     steps:
@@ -193,10 +181,10 @@ stages:
         Write-Host $Module.ModuleVersion
         Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
       displayName: 'Set Package Version'
-    - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
-      displayName: 'Promote Package PreRelease View'
+    - task: rvo-vsts-promotepackage-task@3
       inputs:
         feed: '$(NugetFeedName)'
+        inputType: 'nameVersion'
         definition: '$(resources.pipeline.Build.pipelineName)'
         version: '$(nugetPackageVersion)'
         releaseView: 'Prerelease'
@@ -221,25 +209,23 @@ stages:
               Write-Host $Module.ModuleVersion
               Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
-          steps:
-        - task: NuGetCommand@2
-          displayName: 'Push Package to NuGet.Org'
-          inputs:
-            command: push
-            packagesToPush: '$(NugetNupkgPath)'
-            nuGetFeedType: external
-            publishFeedCredentials: Nuget.org
-        - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
-          displayName: 'Promote package to Release View'
-          inputs:
-            feed: '$(NugetFeedName)'
-            definition: '$(resources.pipeline.Build.pipelineName)'
-            version: '$(nugetPackageVersion)'
-            releaseView: 'Release'
-          env:
-            SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+          - task: NuGetCommand@2
+            displayName: 'Push Package to NuGet.Org'
+            inputs:
+              command: push
+              packagesToPush: '$(NugetNupkgPath)'
+              nuGetFeedType: external
+              publishFeedCredentials: Nuget.org
+          - task: rvo-vsts-promotepackage-task@3
+            inputs:
+              feed: '$(NugetFeedName)'
+              inputType: 'nameVersion'
+              definition: '$(resources.pipeline.Build.pipelineName)'
+              version: '$(nugetPackageVersion)'
+              releaseView: 'Release'
+            env:
+              SYSTEM_ACCESSTOKEN: $(system.accesstoken)
 
-stages:
 - stage: PSGallery
   displayName: PowerShell Gallery
   condition: eq(variables['psGalSkip'], false)
