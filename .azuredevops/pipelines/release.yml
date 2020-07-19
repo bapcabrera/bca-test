@@ -12,7 +12,7 @@ resources:
     source: Build\Bca.Test
     trigger: 
       branches:
-      - test
+      - master
 
 stages:
   - stage: Stage1
