@@ -4,8 +4,8 @@ trigger:
 - none
 
 variables:
-- group: "YAML - Build"
-- group: "Build - Chocolatey"
+- group: "YAML - Release"
+- group: "Release - Chocolatey"
 - group: "Build - Nuget"
 
 resources:
@@ -17,119 +17,213 @@ resources:
       - master
 
 stages:
-  - stage: Stage1
-    displayName: Stage 1
-    pool:
-      name: $(poolName)
-      vmImage: $(poolVmImage)
-    jobs:
-    - deployment: DeployPreRelease
-      displayName: PreRelease Deployment
-      environment: PreRelease
-      strategy:
-        runOnce:
-          deploy:
-            steps:           
-            - powershell: |
-                Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
-                Write-Host 'buildName: $(buildName)'
-                Write-Host 'relName: $(relName)'
-                Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
-                Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
-                Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
-                Write-Host 'runName: $(resources.pipeline.Build.runName)'
-                Write-Host 'runID: $(resources.pipeline.Build.runID)'
-                Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
-                Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
-                Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
-                Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
-                Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
-                Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
-              displayName: 'Test'
-            - powershell: |
-                Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
-              displayName: 'List'
-    - deployment: DeployRelease
-      displayName: Release Deployment
-      environment: Release
-      strategy:
-        runOnce:
-          deploy:
-            steps:           
-            - powershell: |
-                Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
-                Write-Host 'buildName: $(buildName)'
-                Write-Host 'relName: $(relName)'
-                Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
-                Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
-                Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
-                Write-Host 'runName: $(resources.pipeline.Build.runName)'
-                Write-Host 'runID: $(resources.pipeline.Build.runID)'
-                Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
-                Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
-                Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
-                Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
-                Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
-                Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
-              displayName: 'Test'
-            - powershell: |
-                Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
-              displayName: 'List'
-  - stage: Stage2
-    displayName: Stage 2
-    pool:
-      name: $(poolName)
-      vmImage: $(poolVmImage)
-    jobs:
-    - deployment: DeployPreRelease
-      displayName: PreRelease Deployment
-      environment: PreRelease
-      strategy:
-        runOnce:
-          deploy:
-            steps:           
-            - powershell: |
-                Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
-                Write-Host 'buildName: $(buildName)'
-                Write-Host 'relName: $(relName)'
-                Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
-                Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
-                Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
-                Write-Host 'runName: $(resources.pipeline.Build.runName)'
-                Write-Host 'runID: $(resources.pipeline.Build.runID)'
-                Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
-                Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
-                Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
-                Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
-                Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
-                Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
-              displayName: 'Test'
-            - powershell: |
-                Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
-              displayName: 'List'
-    - deployment: DeployRelease
-      displayName: Release Deployment
-      environment: Release
-      strategy:
-        runOnce:
-          deploy:
-            steps:           
-            - powershell: |
-                Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
-                Write-Host 'buildName: $(buildName)'
-                Write-Host 'relName: $(relName)'
-                Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
-                Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
-                Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
-                Write-Host 'runName: $(resources.pipeline.Build.runName)'
-                Write-Host 'runID: $(resources.pipeline.Build.runID)'
-                Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
-                Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
-                Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
-                Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
-                Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
-                Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
-              displayName: 'Test'
-            - powershell: |
-                Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
-              displayName: 'List'
+- stage: Choco
+  displayName: Chocolatey
+  pool:
+    name: $(ReleasePoolName)
+    vmImage: $(ReleasePoolWindowsVm)
+  condition: eq(variables['Choco.Skip'], false)
+  jobs:
+  - deployment: ChocoPreRelease
+    displayName: PreRelease Deployment
+    environment: PreRelease
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: |
+              $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
+              Write-Host $Module.ModuleVersion
+              Write-Host "##vso[task.setvariable variable=ChocoPackage.Version]$($Module.ModuleVersion.ToString())"
+            displayName: 'Set Package Version'
+          - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
+            displayName: 'Add Chocolatey Source'
+            inputs:
+              command: source
+              verbose: true
+              installPackageId: '$(Build.DefinitionName)'
+              installPackageVersion: '$(ChocoPackage.Version)'
+              installPre: true
+              installSource: '$(ChocoFeedUrl)'
+              sourceSourceName: '$(ChocoFeedName)'
+              sourceSource: '$(ChocoFeedUrl)'
+              user: '$(ChocoFeedUserName)'
+              password: '$(ChocoFeedPassword)'
+              upgradePackageId: '$(Build.DefinitionName)'
+              upgradePackageVersion: '$(ChocoPackage.Version)'
+              upgradeSource: '$(ChocoFeedUrl)'
+            env:
+              SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+          - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
+            displayName: 'Install Chocolatey Package'
+            inputs:
+              command: install
+              verbose: true
+              installPackageId: '$(Build.DefinitionName)'
+              installPackageVersion: '$(ChocoPackage.Version)'
+              installPre: true
+              installSource: '$(ChocoFeedName)'
+              upgradePackageId: '$(Build.DefinitionName)'
+              upgradePackageVersion: '$(ChocoPackage.Version)'
+              upgradeSource: '$(ChocoFeedUrl)'
+            env:
+              SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+          - powershell: |
+              Import-Module $(Build.DefinitionName) -Verbose
+              $Module = Get-Module $(Build.DefinitionName)
+              $Module | Format-List *
+              Write-Host "##vso[task.setvariable variable=ModulePath]$($Module.ModuleBase)"
+              
+              Get-ChildItem -Path $Module.ModuleBase -Recurse
+            displayName: 'Test Module'
+          - task: Pester.PesterRunner.Pester-Task.Pester@10
+            displayName: 'Run Pester Tests'
+            inputs:
+              scriptFolder: '"$(ModulePath)\*"'
+              resultsFile: '$(ChocoTestOutputFile)'
+          - task: PublishTestResults@2
+            displayName: 'Publish Test Results'
+            inputs:
+              testResultsFormat: NUnit
+              testResultsFiles: 'Choco_$(Build.DefinitionName).Tests.xml'
+              searchFolder: '$(System.ArtifactsDirectory)'
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+              testRunTitle: 'Chocolatey Pester Tests'
+          - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
+            displayName: 'Promote Package PreRelease View'
+            inputs:
+              feed: '$(ChocoFeedName)'
+              definition: '$(Build.DefinitionName)'
+              version: '$(ChocoPackage.Version)'
+              releaseView: '$(Build.EnvironmentName)'
+  - deployment: ChocoRelease
+    displayName: Release Deployment
+    environment: Release
+    dependsOn:
+      - ChocoPreRelease
+    condition: eq(variables['Choco.Publish'], true)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: |
+              $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
+              Write-Host $Module.ModuleVersion
+              Write-Host "##vso[task.setvariable variable=ChocoPackage.Version]$($Module.ModuleVersion.ToString())"
+            displayName: 'Set Package Version'
+          - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
+            displayName: 'Push Package to Chocolatey.org'
+            inputs:
+              command: push
+              pushWorkingDirectory: '$(ChocoWorkingPath)'
+              pushNupkgFileName: '$(Build.DefinitionName).nupkg'
+              pushSource: '$(ChocoOrgFeedUrl)'
+              pushApikey: '$(ChocoOrgApiKey)'
+
+
+
+
+          - powershell: |
+              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'buildName: $(buildName)'
+              Write-Host 'relName: $(relName)'
+              Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
+              Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
+              Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
+              Write-Host 'runName: $(resources.pipeline.Build.runName)'
+              Write-Host 'runID: $(resources.pipeline.Build.runID)'
+              Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
+              Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
+              Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
+              Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
+              Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
+              Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
+            displayName: 'Test'
+          - powershell: |
+              Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
+            displayName: 'List'
+  - deployment: DeployRelease
+    displayName: Release Deployment
+    environment: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:           
+          - powershell: |
+              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'buildName: $(buildName)'
+              Write-Host 'relName: $(relName)'
+              Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
+              Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
+              Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
+              Write-Host 'runName: $(resources.pipeline.Build.runName)'
+              Write-Host 'runID: $(resources.pipeline.Build.runID)'
+              Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
+              Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
+              Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
+              Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
+              Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
+              Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
+            displayName: 'Test'
+          - powershell: |
+              Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
+            displayName: 'List'
+- stage: Stage2
+  displayName: Stage 2
+  pool:
+    name: $(poolName)
+    vmImage: $(poolVmImage)
+  jobs:
+  - deployment: DeployPreRelease
+    displayName: PreRelease Deployment
+    environment: PreRelease
+    strategy:
+      runOnce:
+        deploy:
+          steps:           
+          - powershell: |
+              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'buildName: $(buildName)'
+              Write-Host 'relName: $(relName)'
+              Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
+              Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
+              Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
+              Write-Host 'runName: $(resources.pipeline.Build.runName)'
+              Write-Host 'runID: $(resources.pipeline.Build.runID)'
+              Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
+              Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
+              Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
+              Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
+              Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
+              Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
+            displayName: 'Test'
+          - powershell: |
+              Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
+            displayName: 'List'
+  - deployment: DeployRelease
+    displayName: Release Deployment
+    environment: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:           
+          - powershell: |
+              Write-Host 'Build.DefinitionName: $(Build.DefinitionName)'
+              Write-Host 'buildName: $(buildName)'
+              Write-Host 'relName: $(relName)'
+              Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
+              Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
+              Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
+              Write-Host 'runName: $(resources.pipeline.Build.runName)'
+              Write-Host 'runID: $(resources.pipeline.Build.runID)'
+              Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
+              Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
+              Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
+              Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
+              Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
+              Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
+            displayName: 'Test'
+          - powershell: |
+              Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
+            displayName: 'List'
