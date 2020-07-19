@@ -47,17 +47,19 @@ stages:
         New-Item -Path $(BuildTestDirectory) -ItemType Directory -Force
       workingDirectory: '$(BuildSourcesDirectory)'
       displayName: 'Initialize Tests'
-    - task: ToreGroneng.ToreGroneng-PSScriptAnalyzer-Task.PSScriptAnalyzer-Task.PowerShell Script Analyzer@1
-      displayName: 'Run PSScriptAnalyzer '
+    - task: PowerShell Script Analyzer@1
+      displayName: 'Run PowerShell Script Analyzer'
       inputs:
         PsFolder: '$(BuildSourcesDirectory)\Public'
-        ExcludeRules: PSAvoidGlobalVars
-        Severity: Error
-    - task: Pester.PesterRunner.Pester-Task.Pester@10
+        ExcludeRules: 'PSAvoidGlobalVars'
+        Severity: 'Error'
+        FailOnError: true
+    - task: Pester@10
       displayName: 'Run Pester Tests'
       inputs:
         scriptFolder: '$(BuildSourcesDirectory)\*'
         resultsFile: '$(BuildTestOutputFile)'
+        usePSCore: False
     - task: PublishTestResults@2
       displayName: 'Publish Test Results'
       inputs:
@@ -112,10 +114,6 @@ stages:
         Copy-Item -Path .\$(Build.DefinitionName).psd1 -Destination $(BuildSourcesDirectory) -Force
       workingDirectory: '$(Build.Repository.LocalPath)\src\$(Build.DefinitionName)'
       displayName: 'Update Module Manifest'
-    - task: nobitagamer.gitmirror.gitmirror-task.gitmirror@0
-      displayName: 'Mirror Repo to GitHub'
-      inputs:
-        GitRepoUrl: '$(GitHub.RepoUrl)'
     - powershell: |
         Import-Module -Name Bca.Nuget -Force
         Write-Host "Creating '$(BuildNuspecFile)'..."
@@ -131,11 +129,10 @@ stages:
       inputs:
         targetPath: '$(BuildSourcesDirectory)'
         artifact: '$(BuildArtifacts)'
-    - task: nobitagamer.gitmirror.gitmirror-task.gitmirror@0
-      displayName: 'Mirror Repo to GitHub'
+    - task: gitmirror@0
+      displayName: "MIrror Repository to GitHub"
       inputs:
         GitRepoUrl: '$(GitHub.RepoUrl)'
-
 - stage: NuGetPackage
   displayName: NuGet Package
   dependsOn:
@@ -143,7 +140,7 @@ stages:
   pool:
     name: $(BuildPoolName)
     vmImage: $(BuildPoolWindowsVm)
-  conditions: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['nugetPack'], true), eq(variables['Build.SourceBranchName'], 'master'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['nugetPack'], true), eq(variables['Build.SourceBranchName'], 'master'))
   jobs:
   - job: NuGetPack
     displayName: Package NuGet
@@ -178,7 +175,7 @@ stages:
   pool:
     name: $(BuildPoolName)
     vmImage: $(BuildPoolWindowsVm)
-  conditions: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['chocoPack'], true), eq(variables['Build.SourceBranchName'], 'master'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['chocoPack'], true), eq(variables['Build.SourceBranchName'], 'master'))
   jobs:
   - job: ChocoPack
     displayName: Package Chocolatey
@@ -190,10 +187,11 @@ stages:
         targetPath: '$(ChocoPackageSourceTargetDirectory)'
     - powershell: 'Move-Item -Path (Join-Path $(ChocoPackageSourceTargetDirectory) $(Build.DefinitionName).nuspec) -Destination $(ChocoPackageDirectory)'
       displayName: 'Move Nuspec Manifest'
-    - task: fakhrulhilal-maktum.GitDownloader.git-downloader.GitDownloader@0
-      displayName: 'Get Build Tools'
+    - task: GitDownloader@0
+      displayName: "Get Build Tools"
       inputs:
         RepositoryUrl: '$(BuildToolsGitUri)'
+        BranchTag: 'master'
     - task: CopyFiles@2
       displayName: 'Copy Chocolatey Scripts'
       inputs:
@@ -201,9 +199,11 @@ stages:
         Contents: 'chocolatey*nstall.ps1'
         TargetFolder: '$(ChocoPackageToolsDirectory)'
         OverWrite: true
-    - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
-      displayName: 'Chocolatey Pack'
+    - task: ChocolateyCommand@0
+      displayName: "Chocloatey Pack"
       inputs:
+        command: 'pack'
+        packOperation: 'single'
         packWorkingDirectory: '$(ChocoPackageDirectory)'
         packNuspecFileName: '$(Build.DefinitionName).nuspec'
         packOutputDirectory: '$(ChocoPackageDirectory)'
