@@ -133,6 +133,7 @@ stages:
       displayName: "MIrror Repository to GitHub"
       inputs:
         GitRepoUrl: '$(GitHub.RepoUrl)'
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranchName'], 'master'), eq(variables['Build.SourceBranchName'], 'develop')))
 - stage: NuGetPackage
   displayName: NuGet Package
   dependsOn:
