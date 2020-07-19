@@ -120,7 +120,6 @@ stages:
         (Import-PowerShellDataFile .\$(Build.DefinitionName).psd1 | ConvertTo-NuspecManifest).Save("$(BuildNuspecFile)")
       workingDirectory: '$(BuildSourcesDirectory)'
       displayName: 'Create Nuspec Manifest'
-      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
     - powershell: 'Get-ChildItem -Path $(BuildSourcesDirectory) -Recurse'
       displayName: 'List Artifacts Content'
     - task: PublishPipelineArtifact@1
