@@ -23,7 +23,7 @@ stages:
   pool:
     name: $(ReleasePoolName)
     vmImage: $(ReleasePoolWindowsVm)
-  condition: eq(variables['Choco.Skip'], false)
+  condition: eq(variables['chocoSkip'], false)
   jobs:
   - deployment: ChocoPreRelease
     displayName: PreRelease Deployment
@@ -35,7 +35,7 @@ stages:
           - powershell: |
               $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
               Write-Host $Module.ModuleVersion
-              Write-Host "##vso[task.setvariable variable=ChocoPackage.Version]$($Module.ModuleVersion.ToString())"
+              Write-Host "##vso[task.setvariable variable=chocoPackageVersion]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
           - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
             displayName: 'Add Chocolatey Source'
@@ -43,7 +43,7 @@ stages:
               command: source
               verbose: true
               installPackageId: '$(resources.pipeline.Build.pipelineName)'
-              installPackageVersion: '$(ChocoPackage.Version)'
+              installPackageVersion: '$(chocoPackageVersion)'
               installPre: true
               installSource: '$(ChocoFeedUrl)'
               sourceSourceName: '$(ChocoFeedName)'
@@ -51,7 +51,7 @@ stages:
               user: '$(ChocoFeedUserName)'
               password: '$(ChocoFeedPassword)'
               upgradePackageId: '$(resources.pipeline.Build.pipelineName)'
-              upgradePackageVersion: '$(ChocoPackage.Version)'
+              upgradePackageVersion: '$(chocoPackageVersion)'
               upgradeSource: '$(ChocoFeedUrl)'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
@@ -61,11 +61,11 @@ stages:
               command: install
               verbose: true
               installPackageId: '$(resources.pipeline.Build.pipelineName)'
-              installPackageVersion: '$(ChocoPackage.Version)'
+              installPackageVersion: '$(chocoPackageVersion)'
               installPre: true
               installSource: '$(ChocoFeedName)'
               upgradePackageId: '$(resources.pipeline.Build.pipelineName)'
-              upgradePackageVersion: '$(ChocoPackage.Version)'
+              upgradePackageVersion: '$(chocoPackageVersion)'
               upgradeSource: '$(ChocoFeedUrl)'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
@@ -96,7 +96,7 @@ stages:
             inputs:
               feed: '$(ChocoFeedName)'
               definition: '$(resources.pipeline.Build.pipelineName)'
-              version: '$(ChocoPackage.Version)'
+              version: '$(chocoPackageVersion)'
               releaseView: 'Prerelease'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
@@ -105,7 +105,7 @@ stages:
     environment: Release
     dependsOn:
       - ChocoPreRelease
-    condition: eq(variables['Choco.Publish'], true)
+    condition: eq(variables['chocoPublish'], true)
     strategy:
       runOnce:
         deploy:
@@ -113,7 +113,7 @@ stages:
           - powershell: |
               $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
               Write-Host $Module.ModuleVersion
-              Write-Host "##vso[task.setvariable variable=ChocoPackage.Version]$($Module.ModuleVersion.ToString())"
+              Write-Host "##vso[task.setvariable variable=chocoPackageVersion]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
           - task: DownloadPackage@1
             displayName: Download Package
@@ -121,7 +121,7 @@ stages:
               packageType: 'nuget'
               feed: '/$(ChocoFeedName)'
               definition: '$(resources.pipeline.Build.pipelineName)'
-              version: '$(ChocoPackage.Version)'
+              version: '$(chocoPackageVersion)'
               extract: false
               downloadPath: '$(ChocoWorkingPath)'
           - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
@@ -137,7 +137,7 @@ stages:
             inputs:
               feed: '$(ChocoFeedName)'
               definition: '$(resources.pipeline.Build.pipelineName)'
-              version: '$(ChocoPackage.Version)'
+              version: '$(chocoPackageVersion)'
               releaseView: 'Release'
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
@@ -145,7 +145,7 @@ stages:
 stages:
 - stage: NuGet
   displayName: NuGet
-  condition: eq(variables['NuGet.Skip'], false)
+  condition: eq(variables['nugetSkip'], false)
   jobs:
   - deployment: NuGetPreReleaseWindows
     displayName: PreRelease Deployment on Windows
@@ -160,7 +160,7 @@ stages:
           - powershell: |
               $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
               Write-Host $Module.ModuleVersion
-              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+              Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
               Write-Host "##vso[task.setvariable variable=PackageVersion;isOutput=true]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
           - powershell: |
@@ -168,7 +168,7 @@ stages:
               $Credential = New-Object System.Management.Automation.PSCredential ("$(NugetFeedUserName)", $SecurePassword)
               
               Register-PackageSource -ProviderName PowerShellGet -Name $(NugetFeedName) -Location $(NugetFeedUrl) -Trusted -Credential $Credential
-              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(NugetPackage.Version) -Credential $Credential | Install-Module -Credential $Credential
+              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(nugetPackageVersion) -Credential $Credential | Install-Module -Credential $Credential
             displayName: 'Install Module'
           - powershell: |
               Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
@@ -191,14 +191,14 @@ stages:
     - powershell: |
         $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
         Write-Host $Module.ModuleVersion
-        Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+        Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
       displayName: 'Set Package Version'
     - task: rvo.vsts-promotepackage-task.vsts-promotepackage-task.rvo-vsts-promotepackage-task@3
       displayName: 'Promote Package PreRelease View'
       inputs:
         feed: '$(NugetFeedName)'
         definition: '$(resources.pipeline.Build.pipelineName)'
-        version: '$(NugetPackage.Version)'
+        version: '$(nugetPackageVersion)'
         releaseView: 'Prerelease'
       env:
         SYSTEM_ACCESSTOKEN: $(system.accesstoken)
@@ -211,7 +211,7 @@ stages:
     environment: Release
     dependsOn:
       - NuGetPromote
-    condition: eq(variables['NuGet.Publish'], true)
+    condition: eq(variables['nugetPublish'], true)
     strategy:
       runOnce:
         deploy:
@@ -219,7 +219,7 @@ stages:
           - powershell: |
               $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
               Write-Host $Module.ModuleVersion
-              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+              Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
           steps:
         - task: NuGetCommand@2
@@ -234,7 +234,7 @@ stages:
           inputs:
             feed: '$(NugetFeedName)'
             definition: '$(resources.pipeline.Build.pipelineName)'
-            version: '$(NugetPackage.Version)'
+            version: '$(nugetPackageVersion)'
             releaseView: 'Release'
           env:
             SYSTEM_ACCESSTOKEN: $(system.accesstoken)
@@ -242,7 +242,7 @@ stages:
 stages:
 - stage: PSGallery
   displayName: PowerShell Gallery
-  condition: eq(variables['PSGal.Skip'], false)
+  condition: eq(variables['psGalSkip'], false)
   jobs:
   - deployment: PSGalleryPreReleaseWindows
     displayName: PreRelease Deployment on Windows
@@ -257,14 +257,14 @@ stages:
           - powershell: |
               $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
               Write-Host $Module.ModuleVersion
-              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+              Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
           - powershell: |
               $SecurePassword = ConvertTo-SecureString "$(NugetFeedPassword)" -AsPlainText -Force
               $Credential = New-Object System.Management.Automation.PSCredential ("$(NugetFeedUserName)", $SecurePassword)
               
               Register-PackageSource -ProviderName PowerShellGet -Name bca -Location $(NugetFeedUrl) -Trusted -Credential $Credential
-              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(NugetPackage.Version) -Credential $Credential | Install-Module -Credential $Credential
+              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(nugetPackageVersion) -Credential $Credential | Install-Module -Credential $Credential
             displayName: 'Install Module'
           - powershell: |
               Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
@@ -282,7 +282,7 @@ stages:
     environment: Release
     dependsOn:
       - PSGalleryPreReleaseWindows
-    condition: eq(variables['PSGal.Publish'], true)
+    condition: eq(variables['psGalPublish'], true)
     strategy:
       runOnce:
         deploy:
@@ -290,14 +290,14 @@ stages:
           - powershell: |
               $Module = Import-PowerShellDataFile $(ReleaseModuleManifest)
               Write-Host $Module.ModuleVersion
-              Write-Host "##vso[task.setvariable variable=NugetPackage.Version]$($Module.ModuleVersion.ToString())"
+              Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
             displayName: 'Set Package Version'
           - powershell: |
               $SecurePassword = ConvertTo-SecureString "$(NugetFeedPassword)" -AsPlainText -Force
               $Credential = New-Object System.Management.Automation.PSCredential ("$(NugetFeedUserName)", $SecurePassword)
               
               Register-PackageSource -ProviderName PowerShellGet -Name bca -Location $(NugetFeedUrl) -Trusted -Credential $Credential
-              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(NugetPackage.Version) -Credential $Credential | Install-Module -Credential $Credential
+              Find-Module -Name $(resources.pipeline.Build.pipelineName) -RequiredVersion $(nugetPackageVersion) -Credential $Credential | Install-Module -Credential $Credential
             displayName: 'Install Module'
           - powershell: 'Publish-Module -Name $(resources.pipeline.Build.pipelineName) -NuGetApiKey  ''$(PSGalleryApiKey)'''
             displayName: 'Publish Module to PowerShell Gallery'
