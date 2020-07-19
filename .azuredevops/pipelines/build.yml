@@ -214,7 +214,7 @@ stages:
       inputs:
         command: push
         packagesToPush: '$(ChocoPackageFilePath)'
-        publishVstsFeed: 'fc2ce192-b667-42af-806f-653665a62943'
+        publishVstsFeed: '$(ChocoFeedName)'
       condition: and(succeeded(), or(eq(variables['Choco.Push'], true), eq(variables['Build.Reason'], 'IndividualCI')))
       env:
         SYSTEM_ACCESSTOKEN: $(system.accesstoken)
