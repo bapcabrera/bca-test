@@ -143,7 +143,7 @@ stages:
   pool:
     name: $(BuildPoolName)
     vmImage: $(BuildPoolWindowsVm)
-  conditions: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Nuget.Pack'], true), eq(variables['Build.SourceBranchName'], 'master'))
+  conditions: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['nugetPack'], true), eq(variables['Build.SourceBranchName'], 'master'))
   jobs:
   - job: NuGetPack
     displayName: Package NuGet
@@ -167,7 +167,7 @@ stages:
         command: push
         packagesToPush: '$(NugetPackageFilePath)'
         publishVstsFeed: '$(NugetFeedName)'
-      condition: and(succeeded(), or(eq(variables['Nuget.Push'], true), eq(variables['Build.Reason'], 'IndividualCI')))
+      condition: and(succeeded(), or(eq(variables['nugetPush'], true), eq(variables['Build.Reason'], 'IndividualCI')))
       env:
         SYSTEM_ACCESSTOKEN: $(system.accesstoken)
 
@@ -178,7 +178,7 @@ stages:
   pool:
     name: $(BuildPoolName)
     vmImage: $(BuildPoolWindowsVm)
-  conditions: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Choco.Pack'], true), eq(variables['Build.SourceBranchName'], 'master'))
+  conditions: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['chocoPack'], true), eq(variables['Build.SourceBranchName'], 'master'))
   jobs:
   - job: ChocoPack
     displayName: Package Chocolatey
@@ -215,6 +215,6 @@ stages:
         command: push
         packagesToPush: '$(ChocoPackageFilePath)'
         publishVstsFeed: '$(ChocoFeedName)'
-      condition: and(succeeded(), or(eq(variables['Choco.Push'], true), eq(variables['Build.Reason'], 'IndividualCI')))
+      condition: and(succeeded(), or(eq(variables['chocoPush'], true), eq(variables['Build.Reason'], 'IndividualCI')))
       env:
         SYSTEM_ACCESSTOKEN: $(system.accesstoken)
