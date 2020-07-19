@@ -5,8 +5,9 @@ trigger:
 
 variables:
 - group: "YAML - Release"
-- group: "Release - Chocolatey"
-- group: "Build - Nuget"
+- group: "YAML - Release - Chocolatey"
+- group: "YAML - Release - Nuget"
+- group: "Release - PS Gallery"
 
 resources:
   pipelines:
