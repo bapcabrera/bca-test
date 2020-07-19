@@ -1,11 +1,10 @@
+name: $(Date:yyyyMMdd).$(Rev:r)
+
 trigger:
 - none
 
 variables:
-  buildName: ${{ replace(variables['Build.DefinitionName'],'.Release','') }}
-  poolName: 'Azure Pipelines'
-  poolVmImage: 'vs2017-win2016'
-
+  - group: 
 resources:
   pipelines:
   - pipeline: Build
