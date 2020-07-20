@@ -1,5 +1,5 @@
 variables:
-- group: "YAML - Build"
+- template: ../variables/common.yml
 
 parameters:
 - name: 'name'
