@@ -19,59 +19,9 @@ variables:
 stages: 
 - stage: TestAndBuild
   displayName: Test and Build
-  jobs:
-  - job: TestWindows
-    displayName: Test Module
-    pool:
-      name: $(BuildPoolName)
-      vmImage: $(BuildPoolWindowsVm)
-    steps:
-    - template: simple-param.yml
-      parameters:
-        yesNo: false
-    - task: CopyFiles@2
-      displayName: 'Copy Sources'
-      inputs:
-        SourceFolder: 'src/$(Build.DefinitionName)'
-        Contents: |
-          **
-          !**\.gitignore
-        TargetFolder: '$(BuildSourcesDirectory)'
-        CleanTargetFolder: true
-        OverWrite: true
-    - powershell: |
-        Write-Host "Installing dependencies..."
-        (Import-PowerShellDataFile .\$(Build.DefinitionName).psd1).RequiredModules | Where-Object { $_ } | ForEach-Object {
-          Write-Host " - Installing module '$($_.ModuleName)' with version '$($_.ModuleVersion)'."
-          Find-Module -Name $_.ModuleName -RequiredVersion $_.ModuleVersion | Install-Module -Scope CurrentUser -Force
-        }
-
-        Write-Host "Creating test results directory..."
-        New-Item -Path $(BuildTestDirectory) -ItemType Directory -Force
-      workingDirectory: '$(BuildSourcesDirectory)'
-      displayName: 'Initialize Tests'
-    - task: PowerShell Script Analyzer@1
-      displayName: 'Run PowerShell Script Analyzer'
-      inputs:
-        PsFolder: '$(BuildSourcesDirectory)\Public'
-        ExcludeRules: 'PSAvoidGlobalVars'
-        Severity: 'Error'
-        FailOnError: true
-    - task: Pester@10
-      displayName: 'Run Pester Tests'
-      inputs:
-        scriptFolder: '$(BuildSourcesDirectory)\*'
-        resultsFile: '$(BuildTestOutputFile)'
-        usePSCore: False
-    - task: PublishTestResults@2
-      displayName: 'Publish Test Results'
-      inputs:
-        testResultsFormat: NUnit
-        testResultsFiles: '**\*.Tests.xml'
-        searchFolder: '$(BuildTestDirectory)'
-        mergeTestResults: true
-        failTaskOnFailedTests: true
-        testRunTitle: 'Pester Tests'
+  - template: build/test.yml
+    parameters:
+      name: TestWindows
   - job: Build
     displayName: Build Module
     pool:
@@ -127,7 +77,7 @@ stages:
       displayName: 'List Artifacts Content'
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Pipeline Artifact'
-      #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
       inputs:
         targetPath: '$(BuildSourcesDirectory)'
         artifact: '$(BuildArtifacts)'
