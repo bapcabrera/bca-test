@@ -9,6 +9,9 @@ parameters:
   type: string
   default: '$(BuildPoolWindowsVm)'
 
+variables:
+- group: "YAML - Build"
+
 jobs:
 - job: ${{ parameters.name }}
   displayName: Test Module on ${{ parameters.vmImage }} (${{ parameters.pool }})
