@@ -19,9 +19,12 @@ variables:
 stages: 
 - stage: TestAndBuild
   displayName: Test and Build
+  jobs:
   - template: build/test.yml
     parameters:
-      name: TestWindows
+      name: 'TestWindows'
+      pool: $(BuildPoolName)
+      vmImage: $(BuildPoolWindowsVm)
   - job: Build
     displayName: Build Module
     pool:
