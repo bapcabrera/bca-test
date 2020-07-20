@@ -25,12 +25,12 @@ stages:
     parameters:
       name: 'TestWindows'
       pool: '${{ variables.buildPoolName }}'
-      vmImage: '${{ variables.uildPoolWindowsVm }}'
+      vmImage: '${{ variables.buildPoolWindowsVm }}'
   - template: build/jobs/test.yml
     parameters:
       name: 'TestLinux'
       pool: '${{ variables.buildPoolName }}'
-      vmImage: '${{ variables.uildPoolLinuxVm }}'
+      vmImage: '${{ variables.buildPoolLinuxVm }}'
   - job: Build
     displayName: Build Module
     pool:
