@@ -21,6 +21,7 @@ variables:
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
+- template: pipelines/azuredevops/build/variables/common.yml@build-tools
 
 stages: 
 - stage: TestAndBuild
