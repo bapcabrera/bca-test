@@ -1,0 +1,4 @@
+variables:
+  - buildPoolName: 'Azure Pipelines'
+  - buildPoolWindowsVm: 'vs2017-win2016'
+  - buildPoolLinuxVm: 'ubuntu-latest'
