@@ -23,8 +23,13 @@ stages:
   - template: build/test.yml
     parameters:
       name: 'TestWindows'
-      pool: $(BuildPoolName)
-      vmImage: $(BuildPoolWindowsVm)
+      pool: '$(BuildPoolName)'
+      vmImage: '$(BuildPoolWindowsVm)'
+  - template: build/test.yml
+    parameters:
+      name: 'TestLinux'
+      pool: '$(BuildPoolName)'
+      vmImage: '$(BuildPoolLinuxVm)'
   - job: Build
     displayName: Build Module
     pool:
@@ -32,6 +37,7 @@ stages:
       vmImage: $(BuildPoolWindowsVm)
     dependsOn:
       - TestWindows
+      - TestLinux
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     steps:
     - task: CopyFiles@2
