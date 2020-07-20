@@ -4,13 +4,13 @@ variables:
 parameters:
 - name: 'name'
   type: string
-  default: 'test'
+  default: 'Test'
 - name: 'pool'
   type: string
-  default: '${{ variables.buildPoolName }}'
+  default: ''
 - name: 'vmImage'
   type: string
-  default: '${{ variables.buildPoolWindows }}'
+  default: ''
 
 jobs:
 - job: ${{ parameters.name }}
