@@ -1,3 +1,6 @@
+variables:
+- group: "YAML - Build"
+
 parameters:
 - name: 'name'
   type: string
@@ -8,9 +11,6 @@ parameters:
 - name: 'vmImage'
   type: string
   default: '$(BuildPoolWindowsVm)'
-
-variables:
-- group: "YAML - Build"
 
 jobs:
 - job: ${{ parameters.name }}
