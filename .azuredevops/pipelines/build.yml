@@ -10,23 +10,22 @@ trigger:
     - .azuredevops/**
     - .github/**
 
-variables:
-- group: "YAML - Build"
-- group: "Build - Chocolatey"
-- group: "Build - Nuget"
-- group: "GitHub - BapCabrera"
-- template: build/variables/common.yml
+resources:
+  repositories:
+    - repository: build-tools
+      type: git
+      name: build-tools
 
 stages: 
 - stage: TestAndBuild
   displayName: Test and Build
   jobs:
-  - template: build/jobs/test.yml
+  - template: pipelines/azuredevops/build/jobs/test.yml@build-tools
     parameters:
       name: 'TestWindows'
       pool: '${{ variables.buildPoolName }}'
       vmImage: '${{ variables.buildPoolWindowsVm }}'
-  - template: build/jobs/test.yml
+  - template: pipelines/azuredevops/build/jobs/test.yml@build-tools
     parameters:
       name: 'TestLinux'
       pool: '${{ variables.buildPoolName }}'
