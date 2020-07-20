@@ -16,6 +16,12 @@ resources:
       type: git
       name: build-tools
 
+variables:
+- group: "YAML - Build"
+- group: "Build - Chocolatey"
+- group: "Build - Nuget"
+- group: "GitHub - BapCabrera"
+
 stages: 
 - stage: TestAndBuild
   displayName: Test and Build
