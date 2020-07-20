@@ -9,9 +9,6 @@ parameters:
   type: string
   default: ''
 
-variables:
-- template: ../variables/common.yml
-
 jobs:
 - job: ${{ parameters.name }}
   displayName: Test Module on ${{ parameters.vmImage }} (${{ parameters.pool }})
@@ -30,6 +27,7 @@ jobs:
       CleanTargetFolder: true
       OverWrite: true
   - powershell: |
+      Write-Host '${{ variables.buildPoolName }}'
       Write-Host "Installing dependencies..."
       (Import-PowerShellDataFile .\$(Build.DefinitionName).psd1).RequiredModules | Where-Object { $_ } | ForEach-Object {
           Write-Host " - Installing module '$($_.ModuleName)' with version '$($_.ModuleVersion)'."
