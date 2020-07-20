@@ -22,6 +22,7 @@ variables:
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
 - template: pipelines/azuredevops/build/variables/common.yml@build-tools
+- template: pipelines/azuredevops/variables/common.yml@build-tools
 
 stages: 
 - template: pipelines/azuredevops/build/pipepline-psmodule.yml@build-tools
