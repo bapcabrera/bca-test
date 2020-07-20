@@ -15,6 +15,7 @@ variables:
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
+- template: ../variables/common.yml
 
 stages: 
 - stage: TestAndBuild
@@ -23,13 +24,11 @@ stages:
   - template: build/test.yml
     parameters:
       name: 'TestWindows'
-      pool: '$(BuildPoolName)'
-      vmImage: '$(BuildPoolWindowsVm)'
   - template: build/jobs/test.yml
     parameters:
       name: 'TestLinux'
-      pool: '$(BuildPoolName)'
-      vmImage: '$(BuildPoolLinuxVm)'
+      pool: '${{ variables.buildPoolName }}'
+      vmImage: '${{ variables.uildPoolLinuxVm }}'
   - job: Build
     displayName: Build Module
     pool:
