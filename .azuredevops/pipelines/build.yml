@@ -26,6 +26,9 @@ stages:
       name: $(BuildPoolName)
       vmImage: $(BuildPoolWindowsVm)
     steps:
+    - template: simple-param.yml
+      parameters:
+        yesNo: false
     - task: CopyFiles@2
       displayName: 'Copy Sources'
       inputs:
