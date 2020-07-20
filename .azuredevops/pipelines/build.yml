@@ -124,7 +124,7 @@ stages:
       displayName: 'List Artifacts Content'
     - task: PublishPipelineArtifact@1
       displayName: 'Publish Pipeline Artifact'
-      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
+      #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranchName'], 'master'))
       inputs:
         targetPath: '$(BuildSourcesDirectory)'
         artifact: '$(BuildArtifacts)'
