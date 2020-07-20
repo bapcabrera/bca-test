@@ -21,7 +21,7 @@ stages:
 - stage: TestAndBuild
   displayName: Test and Build
   jobs:
-  - template: build/test.yml
+  - template: build/jobs/test.yml
     parameters:
       name: 'TestWindows'
   - template: build/jobs/test.yml
