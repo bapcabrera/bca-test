@@ -15,7 +15,7 @@ variables:
 - group: "Build - Chocolatey"
 - group: "Build - Nuget"
 - group: "GitHub - BapCabrera"
-- template: ../variables/common.yml
+- template: build/variables/common.yml
 
 stages: 
 - stage: TestAndBuild
