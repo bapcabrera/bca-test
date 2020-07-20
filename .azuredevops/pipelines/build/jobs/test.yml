@@ -7,10 +7,10 @@ parameters:
   default: 'test'
 - name: 'pool'
   type: string
-  default: '$(BuildPoolName)'
+  default: '${{ variables.buildPoolName }}'
 - name: 'vmImage'
   type: string
-  default: '$(BuildPoolWindowsVm)'
+  default: '${{ variables.buildPoolWindows }}'
 
 jobs:
 - job: ${{ parameters.name }}
