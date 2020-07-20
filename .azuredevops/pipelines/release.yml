@@ -49,9 +49,9 @@ stages:
             env:
               SYSTEM_ACCESSTOKEN: $(system.accesstoken)
           - task: ChocolateyCommand@0
+            displayName: "Install Chocolatey Package"
             inputs:
               command: 'install'
-              verbose: true
               installPackageId: '$(resources.pipeline.Build.pipelineName)'
               installPackageVersion: '$(chocoPackageVersion)'
               installPre: true
@@ -62,13 +62,14 @@ stages:
               Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
               $Module = Get-Module $(resources.pipeline.Build.pipelineName)
               $Module | Format-List *
-              Write-Host "##vso[task.setvariable variable=ModulePath]$($Module.ModuleBase)"
+              Write-Host "##vso[task.setvariable variable=modulePath]$($Module.ModuleBase)"
               
               Get-ChildItem -Path $Module.ModuleBase -Recurse
             displayName: 'Test Module'
           - task: Pester@10
+            displayName: "Run Pester Tests"
             inputs:
-              scriptFolder: '"$(ModulePath)\*"'
+              scriptFolder: '"$(modulePath)\*"'
               resultsFile: '$(ChocoTestOutputFile)'
               usePSCore: False
           - task: PublishTestResults@2
@@ -81,6 +82,7 @@ stages:
               failTaskOnFailedTests: true
               testRunTitle: 'Chocolatey Pester Tests'
           - task: rvo-vsts-promotepackage-task@3
+            displayName: "Promote Package to Prerelease View"
             inputs:
               feed: '$(ChocoFeedName)'
               inputType: 'nameVersion'
@@ -114,6 +116,7 @@ stages:
               extract: false
               downloadPath: '$(ChocoWorkingPath)'
           - task: ChocolateyCommand@0
+            displayName: "Push Package to Chocolatey.org"
             inputs:
               command: 'push'
               pushOperation: 'single'
@@ -123,6 +126,7 @@ stages:
               pushSource: '$(ChocoOrgFeedUrl)'
               pushApikey: '$(ChocoOrgApiKey)'
           - task: rvo-vsts-promotepackage-task@3
+            displayName: "Promote Package to Release View"
             inputs:
               feed: '$(ChocoFeedName)'
               inputType: 'nameVersion'
@@ -163,7 +167,7 @@ stages:
               Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
               $Module = Get-Module $(resources.pipeline.Build.pipelineName)
               $Module | Format-List *
-              Write-Host "##vso[task.setvariable variable=ModulePath]$($Module.ModuleBase)"
+              Write-Host "##vso[task.setvariable variable=modulePath]$($Module.ModuleBase)"
               
               Get-ChildItem -Path $Module.ModuleBase -Recurse
             displayName: 'Test Module'
@@ -182,6 +186,7 @@ stages:
         Write-Host "##vso[task.setvariable variable=nugetPackageVersion]$($Module.ModuleVersion.ToString())"
       displayName: 'Set Package Version'
     - task: rvo-vsts-promotepackage-task@3
+      displayName: "Promote Package to Prerelease View"
       inputs:
         feed: '$(NugetFeedName)'
         inputType: 'nameVersion'
@@ -256,7 +261,7 @@ stages:
               Import-Module $(resources.pipeline.Build.pipelineName) -Verbose
               $Module = Get-Module $(resources.pipeline.Build.pipelineName)
               $Module | Format-List *
-              Write-Host "##vso[task.setvariable variable=ModulePath]$($Module.ModuleBase)"
+              Write-Host "##vso[task.setvariable variable=modulePath]$($Module.ModuleBase)"
               
               Get-ChildItem -Path $Module.ModuleBase -Recurse
             displayName: 'Test Module'
