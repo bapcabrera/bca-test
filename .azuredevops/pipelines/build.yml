@@ -17,7 +17,7 @@ resources:
       name: build-tools
 
 variables:
-- template: variables/common.yml@build-tools
+- template: pipelines/azuredevops/variables/all.yml
 
 stages: 
 - template: pipelines/azuredevops/pipeline-build-ps.yml@build-tools
