@@ -17,18 +17,18 @@ parameters:
   displayName: Publish Chocolatey Package
   type: boolean
   default: true
-- name: skipWindowsTest
-  displayName: Skip Tests on Windows
+- name: testWindows
+  displayName: Test on Windows
   type: boolean
-  default: false
-- name: skipLinuxTest
-  displayName: Skip Tests on Linux
+  default: true
+- name: testLinux
+  displayName: Test on Linux
   type: boolean
-  default: false
-- name: skipMacOsTest
-  displayName: Skip Tests on MacOS
+  default: true
+- name: testMacOs
+  displayName: Test on MacOS
   type: boolean
-  default: false
+  default: true
 
 trigger:
   branches:
@@ -59,6 +59,6 @@ stages:
     nugetPush: ${{ parameters.nugetPush }}
     chocoPack: ${{ parameters.chocoPack }}
     chocoPush: ${{ parameters.chocoPush }}
-    skipWindowsTest: ${{ parameters.skipWindowsTest }}
-    skipLinuxTest: ${{ parameters.skipLinuxTest }}
-    skipMacOsTest: ${{ parameters.skipMacOsTest }}
+    testWindows: ${{ parameters.testWindows }}
+    testLinux: ${{ parameters.testLinux }}
+    testMacOs: ${{ parameters.testMacOs }}
