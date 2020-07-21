@@ -34,9 +34,6 @@ resources:
       type: git
       name: build-tools
 
-variables:
-- template: pipelines/azuredevops/variables/all.yml@build-tools
-
 stages: 
 - template: pipelines/azuredevops/pipeline-build-ps.yml@build-tools
   parameters:
