@@ -5,8 +5,16 @@ parameters:
   displayName: Create NuGet Package
   type: boolean
   default: true
-- name: nugetPublish
+- name: nugetPush
   displayName: Publish NuGet Package
+  type: boolean
+  default: true
+- name: chocoPack
+  displayName: Create Chocolatey Package
+  type: boolean
+  default: true
+- name: chocoPush
+  displayName: Publish Chocolatey Package
   type: boolean
   default: true
 
@@ -35,3 +43,7 @@ stages:
     buildName: $(Build.DefinitionName)
     psType: Module
     sourceDirectory: $(Build.Repository.LocalPath)
+    nugetPack: ${{ parameters.nugetPack }}
+    nugetPush: ${{ parameters.nugetPush }}
+    chocoPack: ${{ parameters.chocoPack }}
+    chocoPush: ${{ parameters.chocoPush }}
