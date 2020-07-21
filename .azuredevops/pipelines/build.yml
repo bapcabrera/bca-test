@@ -1,5 +1,10 @@
 name: Build-$(Date:yyyyMMdd).$(Rev:r)
 
+parameters:
+- name: NugetPack
+  type: boolean
+  default: true
+
 trigger:
   branches:
     include:
