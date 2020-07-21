@@ -2,11 +2,11 @@ name: Build-$(Date:yyyyMMdd).$(Rev:r)
 
 parameters:
 - name: nugetPack
-  diaplayName: Create NuGet Package
+  displayName: Create NuGet Package
   type: boolean
   default: true
 - name: nugetPublish
-  diaplayName: Publish NuGet Package
+  displayName: Publish NuGet Package
   type: boolean
   default: true
 
