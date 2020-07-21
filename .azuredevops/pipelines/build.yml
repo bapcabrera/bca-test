@@ -17,6 +17,18 @@ parameters:
   displayName: Publish Chocolatey Package
   type: boolean
   default: true
+- name: skipWindowsTest
+  displayName: Skip Tests on Windows
+  type: boolean
+  default: false
+- name: skipLinuxTest
+  displayName: Skip Tests on Linux
+  type: boolean
+  default: false
+- name: skipMacOSTest
+  displayName: Skip Tests on MacOS
+  type: boolean
+  default: false
 
 trigger:
   branches:
