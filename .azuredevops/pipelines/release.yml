@@ -50,7 +50,7 @@ stages:
   - job: test
     steps:
     - powershell: |
-        Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
+        Get-ChildItem '$(PIPELINE.WORKSPACE)' -Recurse
       displayName: 'List'
 #- template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
 #  parameters:
