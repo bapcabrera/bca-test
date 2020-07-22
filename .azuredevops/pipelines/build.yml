@@ -38,9 +38,9 @@ resources:
       type: git
       name: build-tools
 
-variables:
-- template: pipelines/azuredevops/variables/all.yml@build-tools
-- group: Secrets
+#variables:
+#- template: pipelines/azuredevops/variables/all.yml@build-tools
+#- group: Secrets
 
 stages: 
 - template: pipelines/azuredevops/pipeline-build-ps.yml@build-tools
@@ -48,9 +48,11 @@ stages:
     buildName: $(Build.DefinitionName)
     psType: Module
     sourceDirectory: $(Build.Repository.LocalPath)/src/$(Build.DefinitionName)
-    nugetFeed: $[variables.nugetFeedName]
+    #nugetFeed: $[variables.nugetFeedName]
+    nugetFeed: 'bca'
     nugetPush: ${{ parameters.nugetPush }}
-    chocoFeed: $[variables.chocoFeedName]
+    #chocoFeed: $[variables.chocoFeedName]
+    chocoFeed: 'bca-choco'
     chocoPush: ${{ parameters.chocoPush }}
     testWindows: ${{ parameters.testWindows }}
     testLinux: ${{ parameters.testLinux }}
