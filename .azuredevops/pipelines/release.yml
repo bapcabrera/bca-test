@@ -3,12 +3,6 @@ name: Release-$(Date:yyyyMMdd).$(Rev:r)
 trigger:
 - none
 
-variables:
-- group: "YAML - Release"
-- group: "YAML - Release - Chocolatey"
-- group: "YAML - Release - Nuget"
-- group: "Release - PS Gallery"
-
 resources:
   pipelines:
   - pipeline: Build
@@ -16,6 +10,17 @@ resources:
     trigger: 
       branches:
       - master
+      - develop
+      - test
+  repositories:
+    - repository: build-tools
+      type: git
+      name: build-tools
+
+variables:
+- template: pipelines/azuredevops/variables/all.yml@build-tools
+- group: Secrets
+
 
 stages:
 - stage: Choco
