@@ -1,4 +1,4 @@
-name: Build-$(Date:yyyyMMdd).$(Rev:r)
+name: $(Build.DefinitionName)-Build-$(Date:yyyyMMdd).$(Rev:r)
 
 parameters:
 - name: nugetPack
@@ -48,6 +48,7 @@ resources:
 
 variables:
 - template: pipelines/azuredevops/variables/all.yml@build-tools
+- group: Secrets
 
 stages: 
 - template: pipelines/azuredevops/pipeline-build-ps.yml@build-tools
