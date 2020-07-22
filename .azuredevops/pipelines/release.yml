@@ -1,5 +1,27 @@
 name: Release-$(Date:yyyyMMdd).$(Rev:r)
 
+parameters:
+- name: nugetPub
+  displayName: Publish NuGet Package
+  type: boolean
+  default: true
+- name: chocoPub
+  displayName: Publish Chocolatey Package
+  type: boolean
+  default: true
+- name: testWindows
+  displayName: Test on Windows
+  type: boolean
+  default: true
+- name: testLinux
+  displayName: Test on Linux
+  type: boolean
+  default: true
+- name: testMacOs
+  displayName: Test on MacOS
+  type: boolean
+  default: true
+
 trigger:
 - none
 
@@ -20,7 +42,6 @@ resources:
 variables:
 - template: pipelines/azuredevops/variables/all.yml@build-tools
 - group: Secrets
-
 
 stages:
 - stage: Choco
