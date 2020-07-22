@@ -45,26 +45,6 @@ variables:
 
 
 stages: 
-#- stage: test
-#  jobs:
-#  - job: test
-#    steps:
-#    - powershell: |
-#        Write-Host 'projectID: $(resources.pipeline.Build.projectID)'
-#        Write-Host 'pipelineName: $(resources.pipeline.Build.pipelineName)'
-#        Write-Host 'pipelineID: $(resources.pipeline.Build.pipelineID)'
-#        Write-Host 'runName: $(resources.pipeline.Build.runName)'
-#        Write-Host 'runID: $(resources.pipeline.Build.runID)'
-#        Write-Host 'runURI: $(resources.pipeline.Build.runURI)'
-#        Write-Host 'sourceBranch: $(resources.pipeline.Build.sourceBranch)'
-#        Write-Host 'sourceCommit: $(resources.pipeline.Build.sourceCommit)'
-#        Write-Host ':sourceProvider $(resources.pipeline.Build.sourceProvider)'
-#        Write-Host 'requestedFor: $(resources.pipeline.Build.requestedFor)'
-#        Write-Host 'requestedForID: $(resources.pipeline.Build.requestedForID)'
-#      displayName: 'Test'
-#    - powershell: |
-#        Get-ChildItem '$(PIPELINE.WORKSPACE)' -Recurse
-#      displayName: 'List'
 - template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
   parameters:
     buildName: $(resources.pipeline.Build.pipelineName)
