@@ -1,4 +1,4 @@
-name: $(Build.DefinitionName)-Build-$(Date:yyyyMMdd).$(Rev:r)
+name: Build-$(Date:yyyyMMdd).$(Rev:r)
 
 parameters:
 - name: nugetPush
