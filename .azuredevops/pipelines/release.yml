@@ -45,15 +45,22 @@ variables:
 
 
 stages: 
-- template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
-  parameters:
-    buildName: $(resources.pipeline.Build.pipelineName)
-    artifactName: $(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)
-    psType: Module
-    nugetFeed: $[variables.nugetFeedName]
-    nugetPub: ${{ parameters.nugetPub }}
-    chocoFeed: $[variables.chocoFeedName]
-    chocoPub: ${{ parameters.chocoPub }}
-    testWindows: ${{ parameters.testWindows }}
-    testLinux: ${{ parameters.testLinux }}
-    testMacOs: ${{ parameters.testMacOs }}
+- stage: test
+  jobs:
+  - job: test
+    steps:
+    - powershell: |
+        Get-ChildItem '$(PIPELINE.WORKSPACE)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)' -Recurse
+      displayName: 'List'
+#- template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
+#  parameters:
+#    buildName: $(resources.pipeline.Build.pipelineName)
+#    artifactName: $(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)
+#    psType: Module
+#    nugetFeed: $[variables.nugetFeedName]
+#    nugetPub: ${{ parameters.nugetPub }}
+#    chocoFeed: $[variables.chocoFeedName]
+#    chocoPub: ${{ parameters.chocoPub }}
+#    testWindows: ${{ parameters.testWindows }}
+#    testLinux: ${{ parameters.testLinux }}
+#    testMacOs: ${{ parameters.testMacOs }}
