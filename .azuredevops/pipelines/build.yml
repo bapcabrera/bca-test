@@ -1,16 +1,8 @@
 name: $(Build.DefinitionName)-Build-$(Date:yyyyMMdd).$(Rev:r)
 
 parameters:
-- name: nugetPack
-  displayName: Create NuGet Package
-  type: boolean
-  default: true
 - name: nugetPush
   displayName: Publish NuGet Package
-  type: boolean
-  default: true
-- name: chocoPack
-  displayName: Create Chocolatey Package
   type: boolean
   default: true
 - name: chocoPush
@@ -57,10 +49,8 @@ stages:
     psType: Module
     sourceDirectory: $(Build.Repository.LocalPath)/src/$(Build.DefinitionName)
     nugetFeed: $[variables.nugetFeedName]
-    nugetPack: ${{ parameters.nugetPack }}
     nugetPush: ${{ parameters.nugetPush }}
     chocoFeed: $[variables.chocoFeedName]
-    chocoPack: ${{ parameters.chocoPack }}
     chocoPush: ${{ parameters.chocoPush }}
     testWindows: ${{ parameters.testWindows }}
     testLinux: ${{ parameters.testLinux }}
