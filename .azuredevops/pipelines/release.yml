@@ -68,7 +68,7 @@ stages:
 - template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
   parameters:
     buildName: $(resources.pipeline.Build.pipelineName)
-    artifactName: $(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)
+    artifactPath: $(Pipeline.Workspace)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)
     psType: Module
     nugetFeed: $[variables.nugetFeedName]
     nugetPub: ${{ parameters.nugetPub }}
