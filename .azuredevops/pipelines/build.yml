@@ -41,6 +41,7 @@ resources:
 variables:
 - template: pipelines/azuredevops/variables/all.yml@build-tools
 - group: Secrets
+- group: GitHub - BapCabrera
 
 stages: 
 - template: pipelines/azuredevops/pipeline-build-ps.yml@build-tools
