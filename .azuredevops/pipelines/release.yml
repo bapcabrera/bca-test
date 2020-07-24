@@ -46,9 +46,9 @@ stages:
     buildName: $(resources.pipeline.Build.pipelineName)
     artifactPath: $(Pipeline.Workspace)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)
     psType: Module
-    nugetFeed: $[variables.nugetFeedName]
+    nugetFeed: ${{ variables.nugetFeedName }}
     nugetPub: ${{ parameters.nugetPub }}
-    chocoFeed: $[variables.chocoFeedName]
+    chocoFeed: ${{ variables.chocoFeedName }}
     chocoPub: ${{ parameters.chocoPub }}
     testWindows: ${{ parameters.testWindows }}
     testLinux: ${{ parameters.testLinux }}
