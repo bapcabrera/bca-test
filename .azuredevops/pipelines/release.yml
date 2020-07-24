@@ -1,5 +1,3 @@
-name: Release-$(Date:yyyyMMdd).$(Rev:r)
-
 parameters:
 - name: nugetPub
   displayName: Publish NuGet Package
