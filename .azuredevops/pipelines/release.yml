@@ -30,8 +30,6 @@ resources:
     trigger: 
       branches:
       - master
-      - develop
-      - test
   repositories:
     - repository: build-tools
       type: git
