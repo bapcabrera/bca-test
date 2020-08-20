@@ -42,7 +42,7 @@ variables:
 stages: 
 - template: pipelines/azuredevops/pipeline-build-ps.yml@build-tools
   parameters:
-    buildName: $(Build.DefinitionName)
+    psName: $(Build.DefinitionName)
     psType: Module
     sourceDirectory: $(Build.Repository.LocalPath)/src/$(Build.DefinitionName)
     nugetName: $(Build.DefinitionName)
