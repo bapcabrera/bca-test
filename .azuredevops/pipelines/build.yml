@@ -45,8 +45,10 @@ stages:
     buildName: $(Build.DefinitionName)
     psType: Module
     sourceDirectory: $(Build.Repository.LocalPath)/src/$(Build.DefinitionName)
+    nugetName: $(Build.DefinitionName)
     nugetFeed: ${{ variables.nugetFeedName }}
     nugetPush: ${{ parameters.nugetPush }}
+    chocoName: $(Build.Repository.Name)
     chocoFeed: ${{ variables.chocoFeedName }}
     chocoPush: ${{ parameters.chocoPush }}
     testWindows: ${{ parameters.testWindows }}
