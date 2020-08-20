@@ -42,11 +42,13 @@ variables:
 stages: 
 - template: pipelines/azuredevops/pipeline-build-ps.yml@build-tools
   parameters:
-    buildName: $(Build.DefinitionName)
+    psName: $(Build.DefinitionName)
     psType: Module
     sourceDirectory: $(Build.Repository.LocalPath)/src/$(Build.DefinitionName)
+    nugetName: $(Build.DefinitionName)
     nugetFeed: ${{ variables.nugetFeedName }}
     nugetPush: ${{ parameters.nugetPush }}
+    chocoName: $(Build.Repository.Name)
     chocoFeed: ${{ variables.chocoFeedName }}
     chocoPush: ${{ parameters.chocoPush }}
     testWindows: ${{ parameters.testWindows }}

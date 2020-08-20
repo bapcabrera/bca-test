@@ -43,11 +43,13 @@ variables:
 stages: 
 - template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
   parameters:
-    buildName: $(resources.pipeline.Build.pipelineName)
+    psName: $(resources.pipeline.Build.pipelineName)
     artifactPath: $(Pipeline.Workspace)/Build/$(resources.pipeline.Build.pipelineName)-$(resources.pipeline.Build.runName)
     psType: Module
+    nugetName: $(resources.pipeline.Build.pipelineName)
     nugetFeed: ${{ variables.nugetFeedName }}
     nugetPub: ${{ parameters.nugetPub }}
+    chocoName: $(Build.Repository.Name)
     chocoFeed: ${{ variables.chocoFeedName }}
     chocoPub: ${{ parameters.chocoPub }}
     testWindows: ${{ parameters.testWindows }}
