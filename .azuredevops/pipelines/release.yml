@@ -37,7 +37,6 @@ resources:
 
 variables:
 - template: pipelines/azuredevops/variables/all.yml@build-tools
-- group: Secrets
 
 
 stages: 
