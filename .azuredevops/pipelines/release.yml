@@ -38,7 +38,6 @@ resources:
 variables:
 - template: pipelines/azuredevops/variables/all.yml@build-tools
 
-
 stages: 
 - template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
   parameters:
