@@ -51,6 +51,7 @@ stages:
     nugetName: $(resources.pipeline.Build.pipelineName)
     nugetFeed: ${{ variables.nugetFeedName }}
     nugetPub: ${{ parameters.nugetPub }}
+    psGalPub: ${{ parameters.psGalPub }}
     chocoName: $(Build.Repository.Name)
     chocoFeed: ${{ variables.chocoFeedName }}
     chocoPub: ${{ parameters.chocoPub }}
