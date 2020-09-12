@@ -48,10 +48,13 @@ stages:
     psType: Module
     nugetName: $(resources.pipeline.Build.pipelineName)
     nugetFeed: ${{ variables.nugetFeedName }}
-    nugetPub: ${{ parameters.nugetPub }}
+    #nugetPub: ${{ parameters.nugetPub }}
+    nugetPub: false
     chocoName: $(Build.Repository.Name)
     chocoFeed: ${{ variables.chocoFeedName }}
-    chocoPub: ${{ parameters.chocoPub }}
+    #chocoPub: ${{ parameters.chocoPub }}
+    chocoPub: false
+    gitHubPub: true
     testWindows: ${{ parameters.testWindows }}
     testLinux: ${{ parameters.testLinux }}
     testMacOs: ${{ parameters.testMacOs }}
