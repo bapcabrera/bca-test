@@ -7,10 +7,6 @@ parameters:
   displayName: Publish Chocolatey Package
   type: boolean
   default: true
-- name: psGalPub
-  displayName: Publish to PS Gallery
-  type: boolean
-  default: true
 - name: testWindows
   displayName: Test on Windows
   type: boolean
@@ -41,6 +37,8 @@ resources:
 
 variables:
 - template: pipelines/azuredevops/variables/all.yml@build-tools
+- group: Secrets
+
 
 stages: 
 - template: pipelines/azuredevops/pipeline-release-ps.yml@build-tools
@@ -50,11 +48,13 @@ stages:
     psType: Module
     nugetName: $(resources.pipeline.Build.pipelineName)
     nugetFeed: ${{ variables.nugetFeedName }}
-    nugetPub: ${{ parameters.nugetPub }}
-    psGalPub: ${{ parameters.psGalPub }}
+    #nugetPub: ${{ parameters.nugetPub }}
+    nugetPub: false
     chocoName: $(Build.Repository.Name)
     chocoFeed: ${{ variables.chocoFeedName }}
-    chocoPub: ${{ parameters.chocoPub }}
+    #chocoPub: ${{ parameters.chocoPub }}
+    chocoPub: false
+    gitHubPub: true
     testWindows: ${{ parameters.testWindows }}
     testLinux: ${{ parameters.testLinux }}
     testMacOs: ${{ parameters.testMacOs }}
