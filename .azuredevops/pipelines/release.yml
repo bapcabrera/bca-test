@@ -54,7 +54,8 @@ stages:
     chocoFeed: ${{ variables.chocoFeedName }}
     #chocoPub: ${{ parameters.chocoPub }}
     chocoPub: false
-    gitHubPub: true
+    psGalPub: false
+    gitHubPub: false
     testWindows: ${{ parameters.testWindows }}
     testLinux: ${{ parameters.testLinux }}
     testMacOs: ${{ parameters.testMacOs }}
