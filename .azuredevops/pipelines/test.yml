@@ -1,0 +1,8 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- powershell: |
+    Write-Host $(System.CollectionUri)
+    Write-Host $(Build.Repository.Uri)
+  displayName: 'Write variable'
