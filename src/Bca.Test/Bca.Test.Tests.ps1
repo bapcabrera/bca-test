@@ -24,6 +24,6 @@ Describe "Functions" {
         }
         catch { $Result = $false }
         $Result | Should -Be $true
-        $Test | Should -BeExactly "test"
+        $Test | Should -BeExactly "Test"
     }
 }
