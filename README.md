@@ -23,6 +23,8 @@ _Please not that to date I am the only developper for this module._
 ### CI
 [![Build Status](https://dev.azure.com/baptistecabrera/Bca/_apis/build/status/Build/Bca.Test?repoName=bca-test&branchName=master)](https://dev.azure.com/baptistecabrera/Bca/_build/latest?definitionId=13&repoName=bca-test&branchName=master)
 
+[![Azure DevOps tests (branch)](https://img.shields.io/azure-devops/tests/baptistecabrera/Bca/13/master?logo=azure-pipelines&logoColor=white)](https://dev.azure.com/baptistecabrera/Bca/_build/latest?definitionId=13&repoName=bca-test&branchName=master) [![Azure DevOps coverage (branch)](https://img.shields.io/azure-devops/coverage/baptistecabrera/Bca/13/master?logo=azure-pipelines&logoColor=white)](https://dev.azure.com/baptistecabrera/Bca/_build/latest?definitionId=13&repoName=bca-test&branchName=master)
+
 The CI is an Azure DevOps build pipeline that will:
 - Test the module and does code coverage with _[Pester](https://pester.dev/)_;
 - Run the _[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)_;
@@ -30,6 +32,8 @@ The CI is an Azure DevOps build pipeline that will:
 
 ### CD
 [![Build Status](https://dev.azure.com/baptistecabrera/Bca/_apis/build/status/Release/Bca.Test?repoName=bca-test&branchName=master)](https://dev.azure.com/baptistecabrera/Bca/_build/latest?definitionId=12&repoName=bca-test&branchName=master)
+
+[![Azure DevOps tests (branch)](https://img.shields.io/azure-devops/tests/baptistecabrera/Bca/12/master?logo=azure-pipelines&logoColor=white)](https://dev.azure.com/baptistecabrera/Bca/_build/latest?definitionId=12&repoName=bca-test&branchName=master) [![Azure DevOps coverage (branch)](https://img.shields.io/azure-devops/coverage/baptistecabrera/Bca/12/master?logo=azure-pipelines&logoColor=white)](https://dev.azure.com/baptistecabrera/Bca/_build/latest?definitionId=12&repoName=bca-test&branchName=master)
 
 The CD is an Azure DevOps release pipeline is trigerred that will:
 - In a **Prerelease** step, install both Chocolatey and Nuget packages from the private feed in a container, and run tests again. If tests are successful, the packages are promoted to `@Prerelease` view inside the private feed;
