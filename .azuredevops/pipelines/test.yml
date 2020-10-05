@@ -1,9 +1,23 @@
-pool:
-  vmImage: 'ubuntu-latest'
+variables:
+- name: buildPoolName
+  value: 'Azure Pipelines'
 
-steps:
-- powershell: |
-    Write-Host $(System.CollectionUri)
-    Write-Host $(System.TeamProject)
-    Write-Host $(Build.Repository.Uri)
-  displayName: 'Write variable'
+jobs:
+- job: Test
+  strategy:
+    matrix:
+      windows:
+        poolName: $[variables.buildPoolName]
+        vmImage: windows-latest
+      linux:
+        poolName: $[variables.buildPoolName]
+        vmImage: ubuntu-latest
+      macOS:
+        poolName: $[variables.buildPoolName]
+        vmImage: macOS-latest
+  pool:
+    name: $(poolName)
+    vmImage: $(vmImage)
+  steps:
+  - checkout: none
+  - powershell: Write-Host "$(Agent.OS)"
