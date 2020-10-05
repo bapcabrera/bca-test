@@ -35,7 +35,7 @@ resources:
     - repository: build-tools
       type: git
       name: build-tools
-      ref: refs/tags/1.0
+      ref: refs/tags/2.0
 
 variables:
 - template: pipelines/azuredevops/variables/all.yml@build-tools
