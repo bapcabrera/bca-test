@@ -1,15 +1,19 @@
+variables:
+- name: buildPool
+  value: 'Azure Pipelines'
+
 jobs:
 - job: Test
   strategy:
     matrix:
       windows:
-        poolName: 'Azure Pipelines'
+        poolName: ${{ variables.buildPool }}
         vmImage: windows-latest
       linux:
-        poolName: 'Azure Pipelines'
+        poolName: ${{ variables.buildPool }}
         vmImage: ubuntu-latest
       macOS:
-        poolName: 'Azure Pipelines'
+        poolName: ${{ variables.buildPool }}
         vmImage: macOS-latest
   pool:
     name: $(poolName)
