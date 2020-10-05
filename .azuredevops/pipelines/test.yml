@@ -1,20 +1,26 @@
 variables:
-- name: buildPool
+- name: poolName
   value: 'Azure Pipelines'
+- name: vmImageWindows
+  value: 'windows-latest'
+- name: vmImageLinux
+  value: 'ubuntu-latest'
+- name: vmImageMacOS
+  value: 'macOS-latest'
 
 jobs:
 - job: Test
   strategy:
     matrix:
-      windows:
-        poolName: ${{ variables.buildPool }}
-        vmImage: windows-latest
-      linux:
-        poolName: ${{ variables.buildPool }}
-        vmImage: ubuntu-latest
-      macOS:
-        poolName: ${{ variables.buildPool }}
-        vmImage: macOS-latest
+      Windows:
+        poolName: ${{ variables.poolName }}
+        vmImage: ${{ variables.vmImageWindows }}
+      Linux:
+        poolName: ${{ variables.poolName }}
+        vmImage: ${{ variables.vmImageLinux }}
+      MacOS:
+        poolName: ${{ variables.poolName }}
+        vmImage: ${{ variables.vmImageMacOS }}
   pool:
     name: $(poolName)
     vmImage: $(vmImage)
