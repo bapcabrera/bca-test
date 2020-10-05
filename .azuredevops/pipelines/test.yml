@@ -45,9 +45,9 @@ jobs:
     condition: |
       or(
         succeeded(),
-        and(eq(parameters.testWindows, true), eq(variables['Agent.OS'], 'Windows_NT')),
-        and(eq(parameters.testLinux, true), eq(variables['Agent.OS'], 'Linux')),
-        and(eq(parameters.testMacOS, true), eq(variables['Agent.OS'], 'Darwin'))
+        and(eq('${{ parameters.testWindows }}', 'true'), eq(variables['Agent.OS'], 'Windows_NT')),
+        and(eq('${{ parameters.testLinux }}', 'true'), eq(variables['Agent.OS'], 'Linux')),
+        and(eq('${{ parameters.testMacOS }}', 'true'), eq(variables['Agent.OS'], 'Darwin'))
       )
   #- ${{ if or( and(eq(parameters.testWindows, true), eq(variables['Agent.OS'], 'Windows_NT')), and(eq(parameters.testLinux, true), eq(variables['Agent.OS'], 'Linux')), and(eq(parameters.testMacOS, true), eq(variables['Agent.OS'], 'Darwin')) ) }}:
   #  - powershell: Write-Host "$(Agent.OS)"
