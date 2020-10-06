@@ -151,14 +151,14 @@ stages:
         displayName: Check Chocolatey Package '${{ parameters.chocoName }}'
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
-    - powershell: |
-        if ("${{ parameters.excludeTags }}") { $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ } }
-        else { $ExcludeTags = @() ; Write-Host "Empty array" }
-        $ExcludeTags 
-        $ExcludeTags | ForEach-Object { 
-          Write-Host "---"
-          Write-Host $_
-        }
+#    - powershell: |
+#        if ("${{ parameters.excludeTags }}") { $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ } }
+#        else { $ExcludeTags = @() ; Write-Host "Empty array" }
+#        $ExcludeTags 
+#        $ExcludeTags | ForEach-Object { 
+#          Write-Host "---"
+#          Write-Host $_
+#        }
         #if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\\n" }
         #else { $Tags = @() }
         #$Tags | ForEach-Object {
@@ -255,7 +255,7 @@ stages:
     - powershell: |
         Find-Module Pester | Install-Module -Scope CurrentUser -Force
         
-        $ExcludeTags = "".Split(",")
+        $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ }
         $CodeCoverageResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
         $TestResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Tests.xml'
 
