@@ -368,19 +368,9 @@ stages:
         artifact: $(Build.BuildNumber)
       condition: |
         and(
-            succeeded(),
-            ne(variables['Build.Reason'], 'PullRequest'),
-            or(
-              eq(variables['Build.SourceBranchName'], 'master'),
-              and(
-                eq(variables['Build.SourceBranchName'], 'develop'),
-                eq(variables['isPrerelease'], true)
-              ),
-              and(
-                startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),
-                eq(variables['isPrerelease'], true)
-              )
-            )
+          succeeded(),
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(variables['Build.SourceBranchName'], 'master')
         )
 
 # NuGet Package Stage will build the package and publish it
