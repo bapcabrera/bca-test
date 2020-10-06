@@ -141,6 +141,7 @@ stages:
       vmImage: $(vmImage)
     steps:
     - checkout: none
+    - powershell: Write-Host "$(version)"
     - powershell: |
         $SecurePassword = ConvertTo-SecureString "$env:SYSTEM_ACCESSTOKEN" -AsPlainText -Force
         $Credential = New-Object System.Management.Automation.PSCredential ("${{ parameters.nugetFeed }}", $SecurePassword)
