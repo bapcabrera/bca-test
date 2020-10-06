@@ -153,7 +153,7 @@ stages:
       displayName: Set Build Number
     - powershell: |
         if ("${{ parameters.excludeTags }}") { $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ } }
-        else { $ExcludeTags = @() }
+        else { $ExcludeTags = @() ; Write-Host "Empty array" }
         $ExcludeTags 
         $ExcludeTags | ForEach-Object { 
           Write-Host "---"
