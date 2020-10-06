@@ -153,7 +153,8 @@ stages:
       displayName: Set Build Number
     - powershell: |
         Write-Host $env:EXCLUDE_TAGS
-        $Tags = $env:EXCLUDE_TAGS -split "\n"
+        if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\n" }
+        else { $Tags = @() }
         $Tags | gm
         $Tags | ForEach-Object {
           Write-Host "----"
