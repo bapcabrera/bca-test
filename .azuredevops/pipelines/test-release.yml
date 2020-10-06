@@ -73,40 +73,82 @@ resources:
 # Initialization stage will retrieve the version and check if packages already exist for this version
 stages: 
 - stage: Initialization
-  displayName: Build Initialization
-  pool:
-    name: ${{ variables.poolName }}
-    vmImage: ${{ variables.vmImageWindows }}
+  displayName: Release Initialization
   jobs:
-  - job: Initialization
-    displayName: Initialize Build
-    steps:
-    - powershell: Get-ChildItem '$(Pipeline.Workspace)' -Recurse
-    - powershell: |
-        $Prerelease = $false
-        switch ('${{ parameters.psType }}')
-        {
-          'Module'
-          {
-            $PSData = Import-PowerShellDataFile ./${{ parameters.psName }}.psd1
-            $Version = "{0}{1}" -f $PSData.ModuleVersion.ToString(), $PSData.PrivateData.PSData.Prerelease
-            if ($PSData.PrivateData.PSData.Prerelease) { $Prerelease = $true }
-          }
-          'Script'
-          {
-            $Version = (Test-ScriptFileInfo ./${{ parameters.psName }}.ps1).Version.ToString()
-            if ($Version.Split("-")[1]) { $Prerelease = $true }
-          }
-        }
-        Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is $Version"
-        Write-Host "##vso[task.setvariable variable=packageVersion;isOutput=true]$($Version)"
-        Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is prerelease = $Prerelease"
-        Write-Host "##vso[task.setvariable variable=isPrerelease;isOutput=true]$($Prerelease)"
-      name: getVersion
-      workingDirectory: $(Pipeline.Workspace)/Build/$(resources.pipeline.Build.runName)
-      displayName: 'Get ${{ parameters.psType }} Version'
-    - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
-      displayName: Set Build Number
+  - deployment: Initialization
+    displayName: Initialize Release
+    environment: Initialization
+    pool:
+      name: '$[variables.buildPoolName]'
+      vmImage: '$[variables.buildPoolWindowsVm]'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: Get-ChildItem '$(Pipeline.Workspace)' -Recurse
+          - powershell: |
+              $Prerelease = $false
+              switch ('${{ parameters.psType }}')
+              {
+                'Module'
+                {
+                    $PSData = Import-PowerShellDataFile ./${{ parameters.psName }}.psd1
+                    $Version = "{0}{1}" -f $PSData.ModuleVersion.ToString(), $PSData.PrivateData.PSData.Prerelease
+                    if ($PSData.PrivateData.PSData.Prerelease) { $Prerelease = $true }
+                }
+                'Script'
+                {
+                    $Version = (Test-ScriptFileInfo ./${{ parameters.psName }}.ps1).Version.ToString()
+                    if ($Version.Split("-")[1]) { $Prerelease = $true }
+                }
+              }
+              Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is $Version"
+              Write-Host "##vso[task.setvariable variable=packageVersion;isOutput=true]$($Version)"
+              Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is prerelease = $Prerelease"
+              Write-Host "##vso[task.setvariable variable=isPrerelease;isOutput=true]$($Prerelease)"
+            name: getVersion
+            workingDirectory: $(Pipeline.Workspace)/Build/$(resources.pipeline.Build.runName)
+            displayName: 'Get ${{ parameters.psType }} Version'
+          - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
+            displayName: Set Build Number
+
+
+#stages: 
+#- stage: Initialization
+#  displayName: Build Initialization
+#  pool:
+#    name: ${{ variables.poolName }}
+#    vmImage: ${{ variables.vmImageWindows }}
+#  jobs:
+#  - job: Initialization
+#    displayName: Initialize Release
+#    steps:
+#    - powershell: Get-ChildItem '$(Pipeline.Workspace)' -Recurse
+#    - powershell: |
+#        $Prerelease = $false
+#        switch ('${{ parameters.psType }}')
+#        {
+#          'Module'
+#          {
+#            $PSData = Import-PowerShellDataFile ./${{ parameters.psName }}.psd1
+#            $Version = "{0}{1}" -f $PSData.ModuleVersion.ToString(), $PSData.PrivateData.PSData.Prerelease
+#            if ($PSData.PrivateData.PSData.Prerelease) { $Prerelease = $true }
+#          }
+#          'Script'
+#          {
+#            $Version = (Test-ScriptFileInfo ./${{ parameters.psName }}.ps1).Version.ToString()
+#            if ($Version.Split("-")[1]) { $Prerelease = $true }
+#          }
+#        }
+#        Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is $Version"
+#        Write-Host "##vso[task.setvariable variable=packageVersion;isOutput=true]$($Version)"
+#        Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is prerelease = $Prerelease"
+#        Write-Host "##vso[task.setvariable variable=isPrerelease;isOutput=true]$($Prerelease)"
+#      name: getVersion
+#      workingDirectory: $(Pipeline.Workspace)/Build/$(resources.pipeline.Build.runName)
+#      displayName: 'Get ${{ parameters.psType }} Version'
+#    - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
+#      displayName: Set Build Number
 
 
 # Test stage will run Pester tests and code coverage
