@@ -62,8 +62,9 @@ parameters:
   type: boolean
   default: true
 - name: excludeTage
-  displayName: Test Tags to Exclude
+  displayName: Test Tags to Exclude (one per line)
   type: object
+  default: ''
 
 trigger:
 - none
