@@ -17,6 +17,9 @@ parameters:
   displayName: NuGet Package Name
   type: string
   default: Bca.Test
+- name: nugetFeedUrl
+    displayName: NuGet Feed URL
+  value: https://pkgs.dev.azure.com/baptistecabrera/_packaging/test/nuget/v2
 - name: nugetFeed
   displayName: NuGet Feed Name
   type: string
@@ -136,10 +139,11 @@ stages:
       name: $(poolName)
       vmImage: $(vmImage)
     steps:
+    - checkout: none
     - powershell: |
         $SecurePassword = ConvertTo-SecureString "$env:SYSTEM_ACCESSTOKEN" -AsPlainText -Force
         $Credential = New-Object System.Management.Automation.PSCredential ("${{ parameters.nugetFeed }}", $SecurePassword)
-        Register-PackageSource -ProviderName PowerShellGet -Name ${{ parameters.nugetFeed }} -Location $(nugetFeedUrl) -ScriptSourceLocation $(nugetFeedUrl) -Trusted -Credential $Credential
+        Register-PackageSource -ProviderName PowerShellGet -Name ${{ parameters.nugetFeed }} -Location ${{ parameters.nugetFeedUrl }} -ScriptSourceLocation ${{ parameters.nugetFeedUrl }} -Trusted -Credential $Credential
 
         Write-Host "Installing ${{ parameters.psType }} ${{ parameters.psName }} $(version) from ${{ parameters.nugetFeed }}"
         Find-${{ parameters.psType }} -Name ${{ parameters.psName }} -RequiredVersion $(version) -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force
