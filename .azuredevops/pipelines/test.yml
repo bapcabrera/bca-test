@@ -155,7 +155,7 @@ stages:
         if ("${{ parameters.excludeTags }}") { $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ } }
         else { $ExcludeTags = @() }
         $ExcludeTags 
-        $ExcludeTags | ForeEach-Object { 
+        $ExcludeTags | ForEach-Object { 
           Write-Host "---"
           Write-Host $_
         }
