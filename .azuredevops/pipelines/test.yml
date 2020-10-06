@@ -66,9 +66,9 @@ parameters:
   type: string
   default: 'Public/*'
 - name: excludeTags
-  displayName: Test Tags to Exclude (one per line)
-  type: object
-  default: []
+  displayName: Test Tags to Exclude (comma separated)
+  type: string
+  default: ''
 
 trigger:
 - none
@@ -152,13 +152,13 @@ stages:
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
     - powershell: |
-        $ExcludeTags = "${{ join(';', parameters.excludeTags) }}"
-        Write-Host $ExcludeTags
-        $ExcludeTags.GetType().Name
-        $ExcludeTags.Split("`n")
-        $ExcludeTags.Split("\\n")
-        $ExcludeTags.Split(";")
-        
+        if ("${{ parameters.excludeTags }}") { $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ } }
+        else { $ExcludeTags = @() }
+        $ExcludeTags 
+        $ExcludeTags | ForeEach-Object { 
+          Write-Host "---"
+          Write-Host $_
+        }
         #if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\\n" }
         #else { $Tags = @() }
         #$Tags | ForEach-Object {
