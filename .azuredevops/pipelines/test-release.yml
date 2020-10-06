@@ -79,8 +79,8 @@ stages:
     displayName: Initialize Release
     environment: Initialization
     pool:
-      name: '$[variables.buildPoolName]'
-      vmImage: '$[variables.buildPoolWindowsVm]'
+      name: ${{ variables.poolName }}
+      vmImage: ${{ variables.vmImageWindows }}
     strategy:
       runOnce:
         deploy:
