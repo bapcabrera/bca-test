@@ -1,4 +1,4 @@
-Describe "Module" {
+Describe "Module" -Tags "Module" {
     It "Import Module" {
         try
         {
@@ -15,7 +15,7 @@ Describe "Module" {
     }
 }
 
-Describe "Functions" {
+Describe "Functions" -Tags "Functions" {
     It "Get-Test" {
         try
         {
