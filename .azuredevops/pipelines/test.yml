@@ -155,7 +155,6 @@ stages:
         Write-Host $env:EXCLUDE_TAGS
         if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\n" }
         else { $Tags = @() }
-        $Tags | gm
         $Tags | ForEach-Object {
           Write-Host "----"
           Write-Host $_
