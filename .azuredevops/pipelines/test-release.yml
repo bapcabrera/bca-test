@@ -81,6 +81,7 @@ stages:
   - job: Initialization
     displayName: Initialize Build
     steps:
+    - powershell: Get-ChildItem '$(Pipeline.Workspace)' -Recurse
     - powershell: |
         $Prerelease = $false
         switch ('${{ parameters.psType }}')
