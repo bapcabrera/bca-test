@@ -251,7 +251,7 @@ stages:
         codeCoverageTool: 'JaCoCo'
         summaryFileLocation: '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
         reportDirectory: '$(Agent.TempDirectory)/$(Agent.OS)'
-        pathToSources: "${{ parameters.sourceDirectory }}/Public/"
+        pathToSources: "${{ parameters.sourceDirectory }}/${{ parameters.coveragePath }}"
       condition: |
         and(
           succeeded(),
