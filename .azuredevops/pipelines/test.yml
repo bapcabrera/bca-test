@@ -152,7 +152,7 @@ stages:
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
     - powershell: |
-        $ExcludeTags = ${{ parameters.excludeTags }}
+        $ExcludeTags = "${{ parameters.excludeTags }}"
         Write-Host $ExcludeTags
         $ExcludeTags.GetType().Name
         
