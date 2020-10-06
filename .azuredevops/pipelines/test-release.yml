@@ -120,8 +120,8 @@ stages:
   displayName: Test ${{ parameters.psType }}
   dependsOn: Initialization
   variables:
-    version: $[ stageDependencies.Initialization.Initialization.outputs['getVersion.packageVersion'] ]
-    isPrerelease: $[ stageDependencies.Initialization.Initialization.outputs['getVersion.isPrerelease'] ]
+    version: $[ stageDependencies.Initialization.Initialization.outputs['Initialization.getVersion.packageVersion'] ]
+    isPrerelease: $[ stageDependencies.Initialization.Initialization.outputs['Initialization.getVersion.isPrerelease'] ]
   jobs:
   - job: Test
     displayName: Test on
