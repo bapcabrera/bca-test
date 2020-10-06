@@ -56,7 +56,9 @@ parameters:
   type: string
   default: 'Public/*'
 
+# Variable group Secrets contains 'psGalleryApiKey' used when publishing to PS Gallery
 variables:
+- group: Secrets
 - name: poolName
   value: 'Azure Pipelines'
 - name: vmImageWindows
@@ -267,3 +269,64 @@ stages:
             and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
           )
         )
+
+- stage: Publish
+  displayName: Publish ${{ parameters.psType }}
+  dependsOn:
+    - Initialization
+    - Test
+  variables:
+    version: $[ stageDependencies.Initialization.Initialization.outputs['Initialization.getVersion.packageVersion'] ]
+  jobs:
+  - job: PSGalleryPublish
+    displayName: Publish ${{ parameters.psType }} to PS Gallery
+    condition: eq('${{ parameters.psGalPub }}', true)
+    pool:
+      name: '$[variables.buildPoolName]'
+      vmImage: '$[variables.buildPoolWindowsVSVm]'
+    steps:
+    - checkout: none
+    - powershell: |
+        $SecurePassword = ConvertTo-SecureString "$env:SYSTEM_ACCESSTOKEN" -AsPlainText -Force
+        $Credential = New-Object System.Management.Automation.PSCredential ("${{ parameters.nugetFeed }}", $SecurePassword)
+        Register-PackageSource -ProviderName PowerShellGet -Name ${{ parameters.nugetFeed }} -Location ${{ parameters.nugetFeedUrl }} -ScriptSourceLocation ${{ parameters.nugetFeedUrl }} -Trusted -Credential $Credential
+
+        Write-Host "Installing ${{ parameters.psType }} ${{ parameters.psName }} $(version) from ${{ parameters.nugetFeed }}"
+        Find-${{ parameters.psType }} -Name ${{ parameters.psName }} -RequiredVersion $(version) -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force
+        Unregister-PackageSource -Source ${{ parameters.nugetFeed }} -Force
+      displayName: Install ${{ parameters.psType }} from ${{ parameters.nugetFeed }}
+      env:
+        SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+    - ${{ if eq(parameters.psType, 'Script') }}:
+      - powershell: |
+            if ($env:ProgramFiles)
+            {
+                if ($PSVersionTable.PSVersion.Major -ge 6) { $ScriptPath = Join-Path $env:ProgramFiles "PowerShell/Scripts/" }
+                else { $ScriptPath = Join-Path $env:ProgramFiles "WindowsPowerShell/Scripts/" }
+            }
+            if ($ScriptPath -and (Test-Path (Join-Path $ScriptPath "${{ parameters.psName }}.ps1"))) { $Path = $ScriptPath }
+            else
+            {
+                $Script = Get-InstalledScript -Name ${{ parameters.psName }} -RequiredVersion $(version)
+                $Path = $Script.InstalledLocation
+            }
+                
+            Write-Host "${{ parameters.psType }} base path is $Path"
+            Write-Host "##vso[task.setvariable variable=basePath;isOutput=true]$($Path)"
+        name: getBasePath
+        displayName: 'Get ${{ parameters.psType }} Path'
+    - powershell: |
+        switch ('${{ parameters.psType }}')
+        {
+          "Module" { Publish-Module -Name ${{ parameters.psName }} -NuGetApiKey $env:PSGAL_API_KEY }
+          "Script" { Publish-Script -Path (Join-Path '$(getBasePath.basePath)' '${{ parameters.psName }}.ps1') -NuGetApiKey $env:PSGAL_API_KEY }
+        }
+      displayName: 'Publish ${{ parameters.psType }} to PowerShell Gallery'
+      condition: |
+        and(
+            succeeded(),
+            eq(${{ parameters.psGalPub }}, true)
+        )
+      env:
+        PSGAL_API_KEY: $(psGalleryApiKey)
+        # replace the value of PSGAL_API_KEY by your variable
