@@ -139,11 +139,12 @@ stages:
         Register-PackageSource -ProviderName PowerShellGet -Name ${{ parameters.nugetFeed }} -Location $(nugetFeedUrl) -ScriptSourceLocation $(nugetFeedUrl) -Trusted -Credential $Credential
 
         Write-Host "Installing ${{ parameters.psType }} ${{ parameters.psName }} ${{ parameters.version }} from ${{ parameters.nugetFeed }}"
-        switch ('${{ parameters.psType }}')
-        {
-        'Module' { Find-Module -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
-        'Script' { Find-Script -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Script -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
-        }
+        Find-${{ parameters.psType }} -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force
+#        switch ('${{ parameters.psType }}')
+#        {
+#            'Module' { Find-Module -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
+#            'Script' { Find-Script -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Script -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
+#        }
         Unregister-PackageSource -Source ${{ parameters.nugetFeed }} -Force
       displayName: Install ${{ parameters.psType }} from ${{ parameters.nugetFeed }}
       env:
