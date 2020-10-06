@@ -19,7 +19,8 @@ parameters:
   default: Bca.Test
 - name: nugetFeedUrl
   displayName: NuGet Feed URL
-  value: https://pkgs.dev.azure.com/baptistecabrera/_packaging/test/nuget/v2
+  type: string
+  default: https://pkgs.dev.azure.com/baptistecabrera/_packaging/test/nuget/v2
 - name: nugetFeed
   displayName: NuGet Feed Name
   type: string
