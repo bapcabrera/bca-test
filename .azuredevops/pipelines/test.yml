@@ -61,7 +61,14 @@ parameters:
   default: 'Public/*'
 
 trigger:
-- none
+  branches:
+    include:
+    - develop
+    - master
+  paths:
+    exclude:
+    - .azuredevops/**
+    - .github/**
 
 variables:
 - name: poolName
