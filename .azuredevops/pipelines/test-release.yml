@@ -270,6 +270,7 @@ stages:
           )
         )
 
+# Publish stage will publish to PowerShell Gallery
 - stage: Publish
   displayName: Publish ${{ parameters.psType }}
   dependsOn:
