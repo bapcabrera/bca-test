@@ -1,4 +1,5 @@
 parameters:
+# Source parameters
 - name: psName
   displayName: PowerShell Name
   type: string
@@ -15,6 +16,7 @@ parameters:
   type: string
   default: $(Build.Repository.LocalPath)/src/Bca.Test
 
+# NuGet Package parameters
 - name: nugetName
   displayName: NuGet Package Name
   type: string
@@ -27,6 +29,8 @@ parameters:
   displayName: Push NuGet Package
   type: boolean
   default: true
+
+# Chocolatey Package parameters
 - name: chocoName
   displayName: Chocolatey Package Name
   type: string
@@ -40,6 +44,11 @@ parameters:
   type: boolean
   default: true
 
+# Tests parameters
+- name: runAnalyzer
+  displayName: Run PSScriptAnalyzer
+  type: boolean
+  default: true
 - name: testWindows
   displayName: Test on Windows
   type: boolean
@@ -66,7 +75,7 @@ variables:
 - name: vmImageMacOS
   value: 'macOS-latest'
 
-
+# Initialization stage will retrieve the version and check if packages already exist for this version
 stages: 
 - stage: Initialization
   displayName: Build Initialization
@@ -135,6 +144,7 @@ stages:
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
 
+# Test stage will run Pester tests and code coverage
 - stage: Test
   displayName: Test ${{ parameters.psType }}
   dependsOn: Initialization
@@ -159,8 +169,47 @@ stages:
       name: $(poolName)
       vmImage: $(vmImage)
     steps:
-    - checkout: none
-    - powershell: Write-Host "$(Agent.OS)"
+    - powershell: |
+        Find-Module PSScriptAnalyzer | Install-Module -Scope CurrentUser -Force
+        Invoke-ScriptAnalyzer -Path ./ -Settings PSGallery -Recurse -Severity Error -ReportSummary -EnableExit
+      displayName: 'Run PowerShell Script Analyzer'
+      workingDirectory: '${{ parameters.sourceDirectory }}'
+      condition: |
+        and(
+          succeeded(),
+          eq('${{ parameters.runAnalyzer }}', true),
+          or(
+            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+          )
+        )
+    - powershell: |
+        Write-Host "Installing ${{ parameters.psType }} dependencies..."
+        switch ('${{ parameters.psType }}')
+        {
+          'Module'
+          {
+            (Import-PowerShellDataFile ./${{ parameters.psName }}.psd1).RequiredModules | Where-Object { $_ } | ForEach-Object {
+                Write-Host " - Installing module '$($_.ModuleName)' with version '$($_.ModuleVersion)'."
+                Find-Module -Name $_.ModuleName -RequiredVersion $_.ModuleVersion -AllowPrerelease | Install-Module -Scope CurrentUser -Force
+            }
+          }
+          'Script'
+          {
+            $ScriptFileInfo = Test-ScriptFileInfo ./${{ parameters.psName }}.ps1
+            $ScriptFileInfo.RequiredModules | Where-Object { $_ } | ForEach-Object {
+                Write-Host " - Installing module '$($_.ModuleName)' with version '$($_.ModuleVersion)'."
+                Find-Module -Name $_.ModuleName -RequiredVersion $_.ModuleVersion -AllowPrerelease | Install-Module -Scope CurrentUser -Force
+            }
+            $ScriptFileInfo.RequiredScripts | Where-Object { $_ } | ForEach-Object {
+                Write-Host " - Installing script '$($_)'."
+                Find-Script -Name $_ -AllowPrerelease | Install-Script -Scope CurrentUser -Force
+            }
+          }
+        }
+      workingDirectory: '${{ parameters.sourceDirectory }}'
+      displayName: 'Install ${{ parameters.psType }} Dependencies'
       condition: |
         and(
           succeeded(),
@@ -170,3 +219,85 @@ stages:
             and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
           )
         )
+    - powershell: |
+        Find-Module Pester | Install-Module -Scope CurrentUser -Force
+        
+        $CodeCoverageResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
+        $TestResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Tests.xml'
+
+        switch ('${{ parameters.psType }}')
+        {
+          'Module' { $CodeCoverage = "./Public/*" }
+          'Script' { $CodeCoverage = "./*" }
+        }
+
+        switch ('$(Agent.OS)')
+        {
+          'Windows_NT' { $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -PassThru -Strict }
+          default { $Pester = Invoke-Pester -Path ./ -OutputFile $TestResult -OutputFormat NUnitXml -ExcludeTagFilter WindowsOnly -PassThru -Strict }
+        }
+
+        $Pester.Tests | ForEach-Object {
+          switch ($_.Result)
+          {
+            "Passed" { $Status = "section" }
+            "Failed" { $Status = "error" }
+            default { $Status = "warning" }
+          }
+          Write-Host ("##[{0}] [{1}] {2} ({3})" -f $Status, $_.Result, ($_.Path -join ' > '), $_.Duration)
+        }
+      displayName: 'Run Pester Tests and Coverage'
+      workingDirectory: '${{ parameters.sourceDirectory }}'
+      condition: |
+        and(
+          succeeded(),
+          or(
+            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+          )
+        )
+    - task: PublishTestResults@2
+      displayName: 'Publish Test Results'
+      inputs:
+        testResultsFormat: NUnit
+        testResultsFiles: '**/${{ parameters.psName }}.$(version).$(Agent.OS).Tests.xml'
+        searchFolder: $(Agent.TempDirectory)
+        mergeTestResults: true
+        failTaskOnFailedTests: true
+        testRunTitle: '${{ parameters.testName }} Tests on $(Agent.OS) for ${{ parameters.psName }} ($(version))'
+      condition: |
+        and(
+          succeeded(),
+          or(
+            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+          )
+        )
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish Code Coverage'
+      inputs:
+        codeCoverageTool: 'JaCoCo'
+        summaryFileLocation: '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
+        reportDirectory: '$(Agent.TempDirectory)/$(Agent.OS)'
+        pathToSources: "${{ parameters.sourceDirectory }}/Public/"
+      condition: |
+        and(
+          succeeded(),
+          or(
+            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+          )
+        )
+#    - powershell: Write-Host "$(Agent.OS)"
+#      condition: |
+#        and(
+#          succeeded(),
+#          or(
+#            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+#            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+#            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+#          )
+#        )
