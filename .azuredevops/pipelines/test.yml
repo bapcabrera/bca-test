@@ -265,7 +265,7 @@ stages:
         searchFolder: $(Agent.TempDirectory)
         mergeTestResults: true
         failTaskOnFailedTests: true
-        testRunTitle: '${{ parameters.testName }} Tests on $(Agent.OS) for ${{ parameters.psName }} ($(version))'
+        testRunTitle: 'Tests on $(Agent.OS) for ${{ parameters.psName }} ($(version))'
       condition: |
         and(
           succeeded(),
