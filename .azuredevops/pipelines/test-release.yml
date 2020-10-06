@@ -139,16 +139,20 @@ stages:
         Register-PackageSource -ProviderName PowerShellGet -Name ${{ parameters.nugetFeed }} -Location $(nugetFeedUrl) -ScriptSourceLocation $(nugetFeedUrl) -Trusted -Credential $Credential
 
         Write-Host "Installing ${{ parameters.psType }} ${{ parameters.psName }} ${{ parameters.version }} from ${{ parameters.nugetFeed }}"
-#        Find-${{ parameters.psType }} -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force
-#        switch ('${{ parameters.psType }}')
-#        {
-#            'Module' { Find-Module -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
-#            'Script' { Find-Script -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Script -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
-#        }
-#        Unregister-PackageSource -Source ${{ parameters.nugetFeed }} -Force
+        Find-${{ parameters.psType }} -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force
+        Unregister-PackageSource -Source ${{ parameters.nugetFeed }} -Force
       displayName: Install ${{ parameters.psType }} from ${{ parameters.nugetFeed }}
       env:
         SYSTEM_ACCESSTOKEN: $(system.accesstoken)
+      condition: |
+        and(
+          succeeded(),
+          or(
+            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+          )
+        )
     - powershell: |
         switch ('${{ parameters.psType }}')
         {
@@ -177,6 +181,15 @@ stages:
         Write-Host "##vso[task.setvariable variable=basePath;isOutput=true]$($Path)"
       name: getBasePath
       displayName: 'Get ${{ parameters.psType }} Path'
+      condition: |
+        and(
+          succeeded(),
+          or(
+            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+          )
+        )
     - powershell: |
         Find-Module Pester | Install-Module -Scope CurrentUser -Force
         
