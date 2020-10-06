@@ -152,10 +152,12 @@ stages:
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
     - powershell: |
-        $ExcludeTags = "${{ parameters.excludeTags }}"
+        $ExcludeTags = "${{ join(';', parameters.excludeTags) }}"
         Write-Host $ExcludeTags
         $ExcludeTags.GetType().Name
         $ExcludeTags.Split("`n")
+        $ExcludeTags.Split("\\n")
+        $ExcludeTags.Split(";")
         
         #if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\\n" }
         #else { $Tags = @() }
