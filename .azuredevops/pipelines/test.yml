@@ -27,4 +27,5 @@ jobs:
     vmImage: $(vmImage)
   steps:
   - checkout: none
-  - powershell: Write-Host "$(Agent.OS)"
+  - ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
+    - powershell: Write-Host "$(Agent.OS)"
