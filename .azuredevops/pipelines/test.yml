@@ -155,6 +155,7 @@ stages:
         $ExcludeTags = "${{ parameters.excludeTags }}"
         Write-Host $ExcludeTags
         $ExcludeTags.GetType().Name
+        $ExcludeTags.Split("\n")
         
         #if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\\n" }
         #else { $Tags = @() }
