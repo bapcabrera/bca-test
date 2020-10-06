@@ -151,31 +151,6 @@ stages:
         displayName: Check Chocolatey Package '${{ parameters.chocoName }}'
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
-#    - powershell: |
-#        if ("${{ parameters.excludeTags }}") { $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ } }
-#        else { $ExcludeTags = @() ; Write-Host "Empty array" }
-#        $ExcludeTags 
-#        $ExcludeTags | ForEach-Object { 
-#          Write-Host "---"
-#          Write-Host $_
-#        }
-        #if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\\n" }
-        #else { $Tags = @() }
-        #$Tags | ForEach-Object {
-        #  Write-Host "----"
-        #  Write-Host $_
-        #}
-#    - powershell: |
-#        Write-Host $env:EXCLUDE_TAGS
-#        if ($env:EXCLUDE_TAGS) { $Tags = $env:EXCLUDE_TAGS -split "\\n" }
-#        else { $Tags = @() }
-#        $Tags | ForEach-Object {
-#          Write-Host "----"
-#          Write-Host $_
-#        }
-#      env:
-#        EXCLUDE_TAGS: ${{ join(';', parameters.excludeTags) }}
-
 
 # Test stage will run Pester tests and code coverage
 - stage: Test
@@ -258,19 +233,9 @@ stages:
         $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ }
         $CodeCoverageResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
         $TestResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Tests.xml'
-
         $CodeCoverage = "./${{ parameters.coveragePath }}"
-        #switch ('${{ parameters.psType }}')
-        #{
-        #  'Module' { $CodeCoverage = "./Public/*" }
-        #  'Script' { $CodeCoverage = "./*" }
-        #}
+
         $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -ExcludeTagFilter $ExcludeTags -PassThru -Strict
-        #switch ('$(Agent.OS)')
-        #{
-        #  'Windows_NT' { $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -PassThru -Strict }
-        #  default { $Pester = Invoke-Pester -Path ./ -OutputFile $TestResult -OutputFormat NUnitXml -ExcludeTagFilter WindowsOnly -PassThru -Strict }
-        #}
 
         $Pester.Tests | ForEach-Object {
           switch ($_.Result)
@@ -326,13 +291,3 @@ stages:
             and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
           )
         )
-#    - powershell: Write-Host "$(Agent.OS)"
-#      condition: |
-#        and(
-#          succeeded(),
-#          or(
-#            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
-#            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
-#            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
-#          )
-#        )
