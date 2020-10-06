@@ -1,3 +1,17 @@
+parameters:
+- name: testWindows
+  type: boolean
+  default: true
+- name: testLinux
+  type: boolean
+  default: true
+- name: testMacOs
+  type: boolean
+  default: true
+
+trigger:
+- none
+
 variables:
 - name: poolName
   value: 'Azure Pipelines'
@@ -31,7 +45,11 @@ jobs:
     condition: |
       and(
         succeeded(),
-        eq(variables['Agent.OS'], 'Windows_NT')
+        or(
+          and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+          and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+          and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+        )
       )
   #- ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
   #  - powershell: Write-Host "$(Agent.OS)"
