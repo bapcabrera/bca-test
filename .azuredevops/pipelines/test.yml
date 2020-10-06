@@ -64,7 +64,7 @@ parameters:
 - name: excludeTage
   displayName: Test Tags to Exclude (one per line)
   type: object
-  default: 
+  default: 'ReleaseOnly'
 
 trigger:
 - none
@@ -147,6 +147,11 @@ stages:
         displayName: Check Chocolatey Package '${{ parameters.chocoName }}'
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
+    - powershell: |
+        Write-Host ${{ parameters.excludeTage }}
+        $Tags = "${{ parameters.excludeTage }}"
+        $Tags | gm
+
 
 # Test stage will run Pester tests and code coverage
 - stage: Test
