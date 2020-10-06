@@ -151,6 +151,10 @@ stages:
         Write-Host ${{ parameters.excludeTage }}
         $Tags = "${{ parameters.excludeTage }}"
         $Tags | gm
+        $Tags | ForEach-Object {
+          Write-Host "----"
+          Write-Host $_
+        }
 
 
 # Test stage will run Pester tests and code coverage
