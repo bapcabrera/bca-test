@@ -30,20 +30,6 @@ parameters:
   type: boolean
   default: true
 
-# Chocolatey Package parameters
-- name: chocoName
-  displayName: Chocolatey Package Name
-  type: string
-  default: bca-test
-- name: chocoFeed
-  displayName: Chocolatey Feed Name
-  type: string
-  default: bca-choco
-- name: chocoPush
-  displayName: Push Chocolatey Package
-  type: boolean
-  default: true
-
 # Tests parameters
 - name: runAnalyzer
   displayName: Run PSScriptAnalyzer
@@ -133,22 +119,6 @@ stages:
               Write-Error -Message "Package '${{ parameters.nugetName }}' with version $(getVersion.packageVersion) already exists." -Category ResourceExists -CategoryActivity "Test-Package" -TargetType "nuget" -TargetName "${{ parameters.nugetName }}" -Exception ResourceExistsException
           }
         displayName: Check NuGet Package '${{ parameters.nugetName }}'
-    - ${{ if eq(parameters.chocoPush, true) }}:
-      - task: DownloadPackage@1
-        displayName: Download Chocolatey Package '${{ parameters.chocoName }}'
-        inputs:
-          packageType: nuget
-          feed: ${{ parameters.chocoFeed }}
-          definition: ${{ parameters.chocoName }}
-          version: $(getVersion.packageVersion)
-          extract: false
-          downloadPath: $(Pipeline.Workspace)
-      - powershell : |
-          if ((Test-Path (Join-Path "$(Pipeline.Workspace)" "${{ parameters.chocoName }}.nupkg")))
-          {
-              Write-Error -Message "Package '${{ parameters.chocoName }}' with version $(getVersion.packageVersion) already exists." -Category ResourceExists -CategoryActivity "Test-Package" -TargetType "nuget" -TargetName "${{ parameters.chocoName }}" -Exception ResourceExistsException
-          }
-        displayName: Check Chocolatey Package '${{ parameters.chocoName }}'
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
 
@@ -291,3 +261,183 @@ stages:
             and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
           )
         )
+
+# Build stage will build the PowerShell and prepare package artifacts
+- stage: Build
+  displayName: Build ${{ parameters.psType }}
+  dependsOn:
+    - Initialization
+    - Test
+  variables:
+    isPrerelease: $[ stageDependencies.Initialization.Initialization.outputs['getVersion.isPrerelease'] ]
+  condition: |
+    and(
+      succeeded(),
+      ne(variables['Build.Reason'], 'PullRequest')
+    )
+  pool:
+    name: ${{ variables.poolName }}
+    vmImage: ${{ variables.vmImageWindows }}
+  jobs:
+  - job: Build
+    displayName: Build ${{ parameters.psType }}
+    steps:
+    - task: CopyFiles@2
+      displayName: 'Copy Sources to Staging'
+      inputs:
+        SourceFolder: '${{ parameters.sourceDirectory }}'
+        Contents: |
+          **
+          !**\.gitignore
+        TargetFolder: '$(Build.StagingDirectory)'
+        CleanTargetFolder: true
+        OverWrite: true
+    - task: CopyFiles@2
+      displayName: 'Copy license to Staging'
+      inputs:
+        Contents: |
+          LICENSE*
+          !**\.gitignore
+        TargetFolder: '$(Build.StagingDirectory)'
+        CleanTargetFolder: false
+        OverWrite: true
+    - powershell: |
+        Write-Host "Installing 'Bca.Nuget'..."
+        Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
+      workingDirectory: '${{ parameters.sourceDirectory }}'
+      displayName: 'Install Bca.Nuget'
+    - powershell: |
+        Write-Host "Installing ${{ parameters.psType }} dependencies..."
+        switch ('${{ parameters.psType }}')
+        {
+          'Module'
+          {
+            (Import-PowerShellDataFile ./${{ parameters.psName }}.psd1).RequiredModules | Where-Object { $_ } | ForEach-Object {
+                Write-Host " - Installing module '$($_.ModuleName)' with version '$($_.ModuleVersion)'."
+                Find-Module -Name $_.ModuleName -RequiredVersion $_.ModuleVersion -AllowPrerelease | Install-Module -Scope CurrentUser -Force
+            }
+          }
+          'Script'
+          {
+            $ScriptFileInfo = Test-ScriptFileInfo ./${{ parameters.psName }}.ps1
+            $ScriptFileInfo.RequiredModules | Where-Object { $_ } | ForEach-Object {
+                Write-Host " - Installing module '$($_.ModuleName)' with version '$($_.ModuleVersion)'."
+                Find-Module -Name $_.ModuleName -RequiredVersion $_.ModuleVersion -AllowPrerelease | Install-Module -Scope CurrentUser -Force
+            }
+            $ScriptFileInfo.RequiredScripts | Where-Object { $_ } | ForEach-Object {
+                Write-Host " - Installing script '$($_)'."
+                Find-Script -Name $_ -AllowPrerelease | Install-Script -Scope CurrentUser -Force
+            }
+          }
+        }
+      workingDirectory: '${{ parameters.sourceDirectory }}'
+      displayName: 'Install ${{ parameters.psType }} Dependencies'
+    - ${{ if eq(parameters.psType, 'Module') }}:    
+      - powershell: |
+          $ModulePath = "./${{ parameters.psName }}.psd1"
+          Import-Module $ModulePath
+          $Module = Get-Module ${{ parameters.psName }}
+          $Updates = @{
+            Path = $ModulePath;
+            FunctionsToExport = $Module.ExportedFunctions.Keys
+          }
+          if ($Module.ExportedCmdlets.Keys) { $Updates.Add("CmdletsToExport", $Module.ExportedCmdlets.Keys) }
+          if ($Module.ExportedAliases.Keys) { $Updates.Add("AliasesToExport", $Module.ExportedAliases.Keys) }
+          if ($Module.ExportedDscResources.Keys) { $Updates.Add("DscResourcesToExport", $Module.ExportedDscResources.Keys) }
+          Update-ModuleManifest @Updates
+            
+          Test-ModuleManifest -Path .\${{ parameters.psName }}.psd1 | Format-List *
+          Copy-Item -Path .\${{ parameters.psName }}.psd1 -Destination $(Build.StagingDirectory) -Force
+        workingDirectory: '${{ parameters.sourceDirectory }}'
+        displayName: 'Update Module Manifest'
+    - powershell: |
+        Import-Module -Name Bca.Nuget -Force
+        switch ('${{ parameters.psType }}')
+        {
+          'Module' { $PSData = Import-PowerShellDataFile ./${{ parameters.psName }}.psd1 }
+          'Script' { $PSData = Test-ScriptFileInfo ./${{ parameters.psName }}.ps1 }
+        }
+        Write-Host "Creating '$(Build.StagingDirectory)/${{ parameters.nugetName }}.nuspec'..."
+        $PSData | ConvertTo-NuspecManifest | Save-NuspecManifest -Path "$(Build.StagingDirectory)/${{ parameters.nugetName }}.nuspec"
+      workingDirectory: '$(Build.StagingDirectory)'
+      displayName: 'Create Nuspec Manifests'
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Pipeline Artifact'
+      inputs:
+        targetPath: '$(Build.StagingDirectory)'
+        artifact: $(Build.BuildNumber)
+      condition: |
+        and(
+            succeeded(),
+            ne(variables['Build.Reason'], 'PullRequest'),
+            or(
+              eq(variables['Build.SourceBranchName'], 'master'),
+              and(
+                eq(variables['Build.SourceBranchName'], 'develop'),
+                eq(variables['isPrerelease'], true)
+              ),
+              and(
+                startsWith(variables['Build.SourceBranch'], 'refs/heads/release'),
+                eq(variables['isPrerelease'], true)
+              )
+            )
+        )
+
+# NuGet Package Stage will build the package and publish it
+- stage: NuGetPackage
+  displayName: Package ${{ parameters.psType }} for NuGet
+  dependsOn:
+    - Initialization
+    - Build
+  variables:
+    isPrerelease: $[ stageDependencies.Initialization.Initialization.outputs['getVersion.isPrerelease'] ]
+  pool:
+    name: ${{ variables.poolName }}
+    vmImage: ${{ variables.vmImageWindows }}
+  condition: |
+    and(
+        succeeded(),
+        ne(variables['Build.Reason'], 'PullRequest'),
+        eq(variables['Build.SourceBranchName'], 'master')
+    )
+  jobs:
+  - job: NuGetPack
+    displayName: Package NuGet
+    steps:
+    - checkout: none
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Pipeline Artifact'
+      inputs:
+        artifact: $(Build.BuildNumber)
+        path: '$(Pipeline.Workspace)'
+    - ${{ if eq(parameters.psType, 'Script') }}:
+      - powershell: |
+          Remove-Item *.Tests.ps1 -Force
+          Remove-Item LICENSE* -Force
+        displayName: 'Remove unused files from package'
+        workingDirectory: '$(Pipeline.Workspace)'
+    - task: NuGetCommand@2
+      displayName: 'NuGet Pack'
+      inputs:
+        command: pack
+        packagesToPack: '$(Pipeline.Workspace)/${{ parameters.nugetName }}.nuspec'
+        packDestination: '$(Pipeline.Workspace)'
+    - powershell: 'Get-ChildItem -Path $(Pipeline.Workspace) -Recurse'
+      displayName: 'List Package Content'
+    - task: NuGetCommand@2
+      displayName: 'Push NuGet Package'
+      inputs:
+        command: push
+        packagesToPush: '$(Pipeline.Workspace)/${{ parameters.nugetName }}*.nupkg'
+        publishVstsFeed: '${{ parameters.nugetFeed }}'
+      condition: |
+        and(
+            succeeded(),
+            eq(variables['Build.SourceBranchName'], 'master'),
+            or(
+                eq(${{ parameters.nugetPush }}, true),
+                eq(variables['Build.Reason'], 'IndividualCI')
+            )
+        )
+      env:
+        SYSTEM_ACCESSTOKEN: $(system.accesstoken)
