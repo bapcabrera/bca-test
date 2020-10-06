@@ -68,7 +68,7 @@ parameters:
 - name: excludeTags
   displayName: Test Tags to Exclude (one per line)
   type: object
-  default: 'ReleaseOnly'
+  default: []
 
 trigger:
 - none
