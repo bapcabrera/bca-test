@@ -104,7 +104,7 @@ stages:
       - task: DownloadPackage@1
         displayName: Download NuGet Package '${{ parameters.nugetName }}'
         inputs:
-          packageType: Nuget
+          packageType: nuget
           feed: ${{ parameters.nugetFeed }}
           definition: ${{ parameters.nugetName }}
           version: $(getVersion.packageVersion)
@@ -120,7 +120,7 @@ stages:
       - task: DownloadPackage@1
         displayName: Download Chocolatey Package '${{ parameters.chocoName }}'
         inputs:
-          packageType: Nuget
+          packageType: nuget
           feed: ${{ parameters.chocoFeed }}
           definition: ${{ parameters.chocoName }}
           version: $(getVersion.packageVersion)
