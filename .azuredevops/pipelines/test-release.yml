@@ -138,8 +138,8 @@ stages:
         $Credential = New-Object System.Management.Automation.PSCredential ("${{ parameters.nugetFeed }}", $SecurePassword)
         Register-PackageSource -ProviderName PowerShellGet -Name ${{ parameters.nugetFeed }} -Location $(nugetFeedUrl) -ScriptSourceLocation $(nugetFeedUrl) -Trusted -Credential $Credential
 
-        Write-Host "Installing ${{ parameters.psType }} ${{ parameters.psName }} ${{ parameters.version }} from ${{ parameters.nugetFeed }}"
-        Find-${{ parameters.psType }} -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force
+        Write-Host "Installing ${{ parameters.psType }} ${{ parameters.psName }} $(version) from ${{ parameters.nugetFeed }}"
+        Find-${{ parameters.psType }} -Name ${{ parameters.psName }} -RequiredVersion $(version) -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force
         Unregister-PackageSource -Source ${{ parameters.nugetFeed }} -Force
       displayName: Install ${{ parameters.psType }} from ${{ parameters.nugetFeed }}
       env:
@@ -158,7 +158,7 @@ stages:
         {
         'Module'
         {
-            Import-Module -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }}
+            Import-Module -Name ${{ parameters.psName }} -RequiredVersion $(version)
             $Module = Get-Module ${{ parameters.psName }}
             $Path = $Module.ModuleBase
         }
@@ -172,7 +172,7 @@ stages:
             if ($ScriptPath -and (Test-Path (Join-Path $ScriptPath "${{ parameters.psName }}.ps1"))) { $Path = $ScriptPath }
             else
             {
-                $Script = Get-InstalledScript -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }}
+                $Script = Get-InstalledScript -Name ${{ parameters.psName }} -RequiredVersion $(version)
                 $Path = $Script.InstalledLocation
             }
         }
