@@ -152,13 +152,15 @@ stages:
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
     - powershell: |
-        Write-Host ${{ parameters.excludeTags }}
-        $Tags = "${{ parameters.excludeTags }}"
+        Write-Host $env:EXCLUDE_TAGS
+        $Tags = $env:EXCLUDE_TAGS -split ";"
         $Tags | gm
         $Tags | ForEach-Object {
           Write-Host "----"
           Write-Host $_
         }
+      env:
+        EXCLUDE_TAGS: ${{ join(';', parameters.excludeTags) }}
 
 
 # Test stage will run Pester tests and code coverage
