@@ -61,6 +61,9 @@ parameters:
   displayName: Test on MacOS
   type: boolean
   default: true
+- name: excludeTage
+  displayName: Test Tags to Exclude
+  type: object
 
 trigger:
 - none
@@ -222,20 +225,22 @@ stages:
     - powershell: |
         Find-Module Pester | Install-Module -Scope CurrentUser -Force
         
+        $ExcludeTags = "".Split(",")
         $CodeCoverageResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
         $TestResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Tests.xml'
 
-        switch ('${{ parameters.psType }}')
-        {
-          'Module' { $CodeCoverage = "./Public/*" }
-          'Script' { $CodeCoverage = "./*" }
-        }
-
-        switch ('$(Agent.OS)')
-        {
-          'Windows_NT' { $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -PassThru -Strict }
-          default { $Pester = Invoke-Pester -Path ./ -OutputFile $TestResult -OutputFormat NUnitXml -ExcludeTagFilter WindowsOnly -PassThru -Strict }
-        }
+        $CodeCoverage = "./*"
+        #switch ('${{ parameters.psType }}')
+        #{
+        #  'Module' { $CodeCoverage = "./Public/*" }
+        #  'Script' { $CodeCoverage = "./*" }
+        #}
+        $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -ExcludeTagFilter $ExcludeTags -PassThru -Strict
+        #switch ('$(Agent.OS)')
+        #{
+        #  'Windows_NT' { $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -PassThru -Strict }
+        #  default { $Pester = Invoke-Pester -Path ./ -OutputFile $TestResult -OutputFormat NUnitXml -ExcludeTagFilter WindowsOnly -PassThru -Strict }
+        #}
 
         $Pester.Tests | ForEach-Object {
           switch ($_.Result)
