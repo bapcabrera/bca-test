@@ -145,7 +145,7 @@ stages:
 #            'Module' { Find-Module -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Module -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
 #            'Script' { Find-Script -Name ${{ parameters.psName }} -RequiredVersion ${{ parameters.version }} -AllowPrerelease -Repository ${{ parameters.nugetFeed }} -Credential $Credential | Install-Script -Repository ${{ parameters.nugetFeed }} -Credential $Credential  -Force }
 #        }
-        Unregister-PackageSource -Source ${{ parameters.nugetFeed }} -Force
+#        Unregister-PackageSource -Source ${{ parameters.nugetFeed }} -Force
       displayName: Install ${{ parameters.psType }} from ${{ parameters.nugetFeed }}
       env:
         SYSTEM_ACCESSTOKEN: $(system.accesstoken)
