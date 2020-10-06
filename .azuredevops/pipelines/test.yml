@@ -204,12 +204,13 @@ stages:
     - powershell: |
         Find-Module Pester | Install-Module -Scope CurrentUser -Force
         
+        $IncludeTags = "${{ parameters.includeTags }}" -split "[, ]" | Where-Object { $_ }
         $ExcludeTags = "${{ parameters.excludeTags }}" -split "[, ]" | Where-Object { $_ }
         $CodeCoverageResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
         $TestResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Tests.xml'
         $CodeCoverage = "./${{ parameters.coveragePath }}"
 
-        $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -ExcludeTagFilter $ExcludeTags -PassThru -Strict
+        $Pester = Invoke-Pester -Path ./ -CodeCoverage $CodeCoverage -CodeCoverageOutputFile $CodeCoverageResult -OutputFile $TestResult -OutputFormat NUnitXml -TagFilter $IncludeTags -ExcludeTagFilter $ExcludeTags -PassThru -Strict
 
         $Pester.Tests | ForEach-Object {
           switch ($_.Result)
