@@ -68,7 +68,7 @@ parameters:
 - name: excludeTags
   displayName: Test Tags to Exclude (comma separated)
   type: string
-  default: ''
+  default: ' '
 
 trigger:
 - none
