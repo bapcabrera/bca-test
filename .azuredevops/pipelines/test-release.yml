@@ -282,9 +282,9 @@ stages:
   - job: PSGalleryPublish
     displayName: Publish ${{ parameters.psType }} to PS Gallery
     condition: eq('${{ parameters.psGalPub }}', true)
-    pool:
-      name: '$[variables.buildPoolName]'
-      vmImage: '$[variables.buildPoolWindowsVSVm]'
+   pool:
+      name: ${{ variables.poolName }}
+      vmImage: ${{ variables.vmImageWindows }}
     steps:
     - checkout: none
     - powershell: |
