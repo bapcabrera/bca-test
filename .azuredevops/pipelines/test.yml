@@ -61,7 +61,11 @@ parameters:
   displayName: Test on MacOS
   type: boolean
   default: true
-- name: excludeTage
+- name: coveragePath
+  displayName: Code Coverage Path (relative to Source Directory)
+  type: string
+  default: 'Public/*'
+- name: excludeTags
   displayName: Test Tags to Exclude (one per line)
   type: object
   default: 'ReleaseOnly'
@@ -148,8 +152,8 @@ stages:
     - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
       displayName: Set Build Number
     - powershell: |
-        Write-Host ${{ parameters.excludeTage }}
-        $Tags = "${{ parameters.excludeTage }}"
+        Write-Host ${{ parameters.excludeTags }}
+        $Tags = "${{ parameters.excludeTags }}"
         $Tags | gm
         $Tags | ForEach-Object {
           Write-Host "----"
@@ -239,7 +243,7 @@ stages:
         $CodeCoverageResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Coverage.xml'
         $TestResult = '$(Agent.TempDirectory)/${{ parameters.psName }}.$(version).$(Agent.OS).Tests.xml'
 
-        $CodeCoverage = "./*"
+        $CodeCoverage = "./${{ parameters.coveragePath }}"
         #switch ('${{ parameters.psType }}')
         #{
         #  'Module' { $CodeCoverage = "./Public/*" }
