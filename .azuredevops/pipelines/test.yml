@@ -1,4 +1,45 @@
 parameters:
+- name: psName
+  displayName: PowerShell Name
+  type: string
+  default: 'Bca.Test'
+- name: psType
+  type: string
+  displayName: PowerShell Type
+  default: 'Module'
+  values:
+    - Module
+    - Script
+- name: sourceDirectory
+  displayName: Source Directory
+  type: string
+  default: $(Build.Repository.LocalPath)/src/Bca.Test
+
+- name: nugetName
+  displayName: NuGet Package Name
+  type: string
+  default: Bca.Test
+- name: nugetFeed
+  displayName: NuGet Feed Name
+  type: string
+  default: bca
+- name: nugetPush
+  displayName: Push NuGet Package
+  type: boolean
+  default: true
+- name: chocoName
+  displayName: Chocolatey Package Name
+  type: string
+  default: bca-test
+- name: chocoFeed
+  displayName: Chocolatey Feed Name
+  type: string
+  default: bca-choco
+- name: chocoPush
+  displayName: Push Chocolatey Package
+  type: boolean
+  default: true
+
 - name: testWindows
   displayName: Test on Windows
   type: boolean
@@ -25,34 +66,107 @@ variables:
 - name: vmImageMacOS
   value: 'macOS-latest'
 
-jobs:
-- job: Test
-  displayName: Test on
-  strategy:
-    matrix:
-      Windows:
-        poolName: ${{ variables.poolName }}
-        vmImage: ${{ variables.vmImageWindows }}
-      Linux:
-        poolName: ${{ variables.poolName }}
-        vmImage: ${{ variables.vmImageLinux }}
-      MacOS:
-        poolName: ${{ variables.poolName }}
-        vmImage: ${{ variables.vmImageMacOS }}
+
+stages: 
+- stage: Initialization
+  displayName: Build Initialization
   pool:
-    name: $(poolName)
-    vmImage: $(vmImage)
-  steps:
-  - checkout: none
-  - powershell: Write-Host "$(Agent.OS)"
-    condition: |
-      and(
-        succeeded(),
-        or(
-          and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
-          and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
-          and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+    name: ${{ variables.poolName }}
+    vmImage: ${{ variables.vmImageWindows }}
+  jobs:
+  - job: Initialization
+    displayName: Initialize Build
+    steps:
+    - powershell: |
+        $Prerelease = $false
+        switch ('${{ parameters.psType }}')
+        {
+          'Module'
+          {
+            $PSData = Import-PowerShellDataFile ./${{ parameters.psName }}.psd1
+            $Version = "{0}{1}" -f $PSData.ModuleVersion.ToString(), $PSData.PrivateData.PSData.Prerelease
+            if ($PSData.PrivateData.PSData.Prerelease) { $Prerelease = $true }
+          }
+          'Script'
+          {
+            $Version = (Test-ScriptFileInfo ./${{ parameters.psName }}.ps1).Version.ToString()
+            if ($Version.Split("-")[1]) { $Prerelease = $true }
+          }
+        }
+        Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is $Version"
+        Write-Host "##vso[task.setvariable variable=packageVersion;isOutput=true]$($Version)"
+        Write-Host "${{ parameters.psType }} ${{ parameters.psName }} version is prerelease = $Prerelease"
+        Write-Host "##vso[task.setvariable variable=isPrerelease;isOutput=true]$($Prerelease)"
+      name: getVersion
+      workingDirectory: ${{ parameters.sourceDirectory }}
+      displayName: 'Get ${{ parameters.psType }} Version'
+    - ${{ if eq(parameters.nugetPush, true) }}:
+      - task: DownloadPackage@1
+        displayName: Download NuGet Package '${{ parameters.nugetName }}'
+        inputs:
+          packageType: Nuget
+          feed: ${{ parameters.nugetFeed }}
+          definition: ${{ parameters.nugetName }}
+          version: $(getVersion.packageVersion)
+          extract: false
+          downloadPath: $(Pipeline.Workspace)
+      - powershell : |
+          if ((Test-Path (Join-Path "$(Pipeline.Workspace)" "${{ parameters.nugetName }}.nupkg")))
+          {
+              Write-Error -Message "Package '${{ parameters.nugetName }}' with version $(getVersion.packageVersion) already exists." -Category ResourceExists -CategoryActivity "Test-Package" -TargetType "nuget" -TargetName "${{ parameters.nugetName }}" -Exception ResourceExistsException
+          }
+        displayName: Check NuGet Package '${{ parameters.nugetName }}'
+    - ${{ if eq(parameters.chocoPush, true) }}:
+      - task: DownloadPackage@1
+        displayName: Download Chocolatey Package '${{ parameters.chocoName }}'
+        inputs:
+          packageType: Nuget
+          feed: ${{ parameters.chocoFeed }}
+          definition: ${{ parameters.chocoName }}
+          version: $(getVersion.packageVersion)
+          extract: false
+          downloadPath: $(Pipeline.Workspace)
+      - powershell : |
+          if ((Test-Path (Join-Path "$(Pipeline.Workspace)" "${{ parameters.chocoName }}.nupkg")))
+          {
+              Write-Error -Message "Package '${{ parameters.chocoName }}' with version $(getVersion.packageVersion) already exists." -Category ResourceExists -CategoryActivity "Test-Package" -TargetType "nuget" -TargetName "${{ parameters.chocoName }}" -Exception ResourceExistsException
+          }
+        displayName: Check Chocolatey Package '${{ parameters.chocoName }}'
+    - powershell: Write-Host "##vso[build.updatebuildnumber]${{ parameters.psName }}-$(getVersion.packageVersion)-$(Build.BuildNumber)"
+      displayName: Set Build Number
+
+- stage: Test
+  displayName: Test ${{ parameters.psType }}
+  dependsOn: Initialization
+  variables:
+    version: $[ stageDependencies.Initialization.Initialization.outputs['getVersion.packageVersion'] ]
+    isPrerelease: $[ stageDependencies.Initialization.Initialization.outputs['getVersion.isPrerelease'] ]
+  jobs:
+  - job: Test
+    displayName: Test on
+    strategy:
+      matrix:
+        Windows:
+          poolName: ${{ variables.poolName }}
+          vmImage: ${{ variables.vmImageWindows }}
+        Linux:
+          poolName: ${{ variables.poolName }}
+          vmImage: ${{ variables.vmImageLinux }}
+        MacOS:
+          poolName: ${{ variables.poolName }}
+          vmImage: ${{ variables.vmImageMacOS }}
+    pool:
+      name: $(poolName)
+      vmImage: $(vmImage)
+    steps:
+    - checkout: none
+    - powershell: Write-Host "$(Agent.OS)"
+      condition: |
+        and(
+          succeeded(),
+          or(
+            and(eq(variables['Agent.OS'], 'Windows_NT'), eq('${{ parameters.testWindows }}', true)),
+            and(eq(variables['Agent.OS'], 'Linux'), eq('${{ parameters.testLinux }}', true)),
+            and(eq(variables['Agent.OS'], 'Darwin'), eq('${{ parameters.testMacOS }}', true))
+          )
         )
-      )
-  #- ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
-  #  - powershell: Write-Host "$(Agent.OS)"
