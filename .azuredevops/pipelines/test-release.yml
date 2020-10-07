@@ -16,7 +16,7 @@ parameters:
 - name: nugetName
   displayName: NuGet Package Name
   type: string
-  default: Bca.Test
+  default: 'Bca.Text'
 - name: nugetFeedUrl
   displayName: NuGet Feed URL
   type: string
@@ -56,9 +56,12 @@ parameters:
   type: string
   default: 'Public/*'
 
-# Variable group Secrets contains 'psGalleryApiKey' used when publishing to PS Gallery
+# Variable group Secrets contains 'psGalleryApiKey' used when publishing to PS Gallery,
+# but you can create the secret variable at the pipeline level, and remove the inclusion of the group.
 variables:
 - group: Secrets
+- name: psGalApiKey
+  value: $(psGalleryApiKey)
 - name: poolName
   value: 'Azure Pipelines'
 - name: vmImageWindows
@@ -80,7 +83,7 @@ resources:
       branches:
       - master
 
-# Initialization stage will retrieve the version and check if packages already exist for this version
+# Initialization stage will retrieve the version
 stages: 
 - stage: Initialization
   displayName: Release Initialization
@@ -95,6 +98,9 @@ stages:
       runOnce:
         deploy:
           steps:
+            env:
+              PSGAL_API_KEY: $(psGalleryApiKey)
+              GLOBAL_PSGAL_API_KEY: $(globalPSGalleryApiKey)"
           - powershell: |
               $Prerelease = $false
               switch ('${{ parameters.psType }}')
@@ -329,5 +335,5 @@ stages:
             eq(${{ parameters.psGalPub }}, true)
         )
       env:
-        PSGAL_API_KEY: $(psGalleryApiKey)
-        # replace the value of PSGAL_API_KEY by your variable
+        PSGAL_API_KEY: $(psGalApiKey)
+        # replace the value of PSGAL_API_KEY by the name of your variable if needed
