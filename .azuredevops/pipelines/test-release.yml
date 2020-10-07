@@ -97,6 +97,10 @@ stages:
         deploy:
           steps:
           - powershell: |
+              Write-Host $env:PSGAL_API_KEY
+            env:
+              PSGAL_API_KEY: $(psGalleryApiKey)
+          - powershell: |
               $Prerelease = $false
               switch ('${{ parameters.psType }}')
               {
