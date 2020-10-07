@@ -35,6 +35,14 @@ parameters:
   displayName: Run PSScriptAnalyzer
   type: boolean
   default: true
+- name: analyzerSeverity
+  displayName: PSScriptAnalyzer Severity
+  type: string
+  default: 'Error'
+  values:
+    - Information
+    - Warning
+    - Error
 - name: testWindows
   displayName: Test on Windows
   type: boolean
@@ -160,7 +168,7 @@ stages:
     steps:
     - powershell: |
         Find-Module PSScriptAnalyzer | Install-Module -Scope CurrentUser -Force
-        Invoke-ScriptAnalyzer -Path ./ -Settings PSGallery -Recurse -Severity Error -ReportSummary -EnableExit
+        Invoke-ScriptAnalyzer -Path ./ -Settings PSGallery -Recurse -Severity ${{ parameters.analyzerSeverity }} -ReportSummary -EnableExit
       displayName: 'Run PowerShell Script Analyzer'
       workingDirectory: '${{ parameters.sourceDirectory }}'
       condition: |
