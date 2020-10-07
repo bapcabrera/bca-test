@@ -411,12 +411,6 @@ stages:
       inputs:
         artifact: $(Build.BuildNumber)
         path: '$(Pipeline.Workspace)'
-    - ${{ if eq(parameters.psType, 'Script') }}:
-      - powershell: |
-          Remove-Item *.Tests.ps1 -Force
-          Remove-Item LICENSE* -Force
-        displayName: 'Remove unused files from package'
-        workingDirectory: '$(Pipeline.Workspace)'
     - task: NuGetCommand@2
       displayName: 'NuGet Pack'
       inputs:
