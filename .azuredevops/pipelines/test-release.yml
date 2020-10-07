@@ -60,7 +60,7 @@ parameters:
 # but you can create the secret variable at the pipeline level, and remove the inclusion of the group.
 variables:
 - group: Secrets
-- name: globalPSGalleryApiKey
+- name: psGalApiKey
   value: $(psGalleryApiKey)
 - name: poolName
   value: 'Azure Pipelines'
@@ -98,10 +98,6 @@ stages:
       runOnce:
         deploy:
           steps:
-          - powershell: |
-              Write-Host "env: $env:PSGAL_API_KEY"
-              Write-Host "global: $(globalPSGalleryApiKey)"
-              Write-Host "global mapped: $env:GLOBAL_PSGAL_API_KEY "
             env:
               PSGAL_API_KEY: $(psGalleryApiKey)
               GLOBAL_PSGAL_API_KEY: $(globalPSGalleryApiKey)"
@@ -339,5 +335,5 @@ stages:
             eq(${{ parameters.psGalPub }}, true)
         )
       env:
-        PSGAL_API_KEY: $(psGalleryApiKey)
+        PSGAL_API_KEY: $(psGalApiKey)
         # replace the value of PSGAL_API_KEY by the name of your variable if needed
