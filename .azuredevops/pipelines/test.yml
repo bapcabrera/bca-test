@@ -60,15 +60,15 @@ parameters:
   type: string
   default: 'Public/*'
 
-trigger:
-  branches:
-    include:
-    - develop
-    - master
-  paths:
-    exclude:
-    - .azuredevops/**
-    - .github/**
+trigger: none
+#  branches:
+#    include:
+#    - develop
+#    - master
+#  paths:
+#    exclude:
+#    - .azuredevops/**
+#    - .github/**
 
 variables:
 - name: poolName
