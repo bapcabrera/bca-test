@@ -312,15 +312,6 @@ stages:
         TargetFolder: '$(Build.StagingDirectory)'
         CleanTargetFolder: true
         OverWrite: true
-    - task: CopyFiles@2
-      displayName: 'Copy license to Staging'
-      inputs:
-        Contents: |
-          LICENSE*
-          !**\.gitignore
-        TargetFolder: '$(Build.StagingDirectory)'
-        CleanTargetFolder: false
-        OverWrite: true
     - powershell: |
         Write-Host "Installing 'Bca.Nuget'..."
         Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
