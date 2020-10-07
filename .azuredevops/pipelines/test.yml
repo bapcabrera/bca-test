@@ -417,8 +417,6 @@ stages:
         command: pack
         packagesToPack: '$(Pipeline.Workspace)/${{ parameters.nugetName }}.nuspec'
         packDestination: '$(Pipeline.Workspace)'
-    - powershell: 'Get-ChildItem -Path $(Pipeline.Workspace) -Recurse'
-      displayName: 'List Package Content'
     - task: NuGetCommand@2
       displayName: 'Push NuGet Package'
       inputs:
