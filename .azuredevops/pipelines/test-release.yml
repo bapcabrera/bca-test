@@ -98,9 +98,6 @@ stages:
       runOnce:
         deploy:
           steps:
-            env:
-              PSGAL_API_KEY: $(psGalleryApiKey)
-              GLOBAL_PSGAL_API_KEY: $(globalPSGalleryApiKey)"
           - powershell: |
               $Prerelease = $false
               switch ('${{ parameters.psType }}')
