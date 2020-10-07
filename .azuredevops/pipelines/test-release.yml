@@ -16,7 +16,7 @@ parameters:
 - name: nugetName
   displayName: NuGet Package Name
   type: string
-  default: ${{ parameters.psName }}
+  default: 'Bca.Text'
 - name: nugetFeedUrl
   displayName: NuGet Feed URL
   type: string
@@ -102,7 +102,6 @@ stages:
               Write-Host "env: $env:PSGAL_API_KEY"
               Write-Host "global: $(globalPSGalleryApiKey)"
               Write-Host "global mapped: $env:GLOBAL_PSGAL_API_KEY "
-              Write-Host ${{ parameters.nugetName }}
             env:
               PSGAL_API_KEY: $(psGalleryApiKey)
               GLOBAL_PSGAL_API_KEY: $(globalPSGalleryApiKey)"
