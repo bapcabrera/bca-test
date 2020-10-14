@@ -35,6 +35,14 @@ parameters:
   displayName: Run PSScriptAnalyzer
   type: boolean
   default: true
+- name: analyzerSeverity
+  displayName: PSScriptAnalyzer Severity
+  type: string
+  default: 'Error'
+  values:
+    - Information
+    - Warning
+    - Error
 - name: testWindows
   displayName: Test on Windows
   type: boolean
@@ -160,7 +168,7 @@ stages:
     steps:
     - powershell: |
         Find-Module PSScriptAnalyzer | Install-Module -Scope CurrentUser -Force
-        Invoke-ScriptAnalyzer -Path ./ -Settings PSGallery -Recurse -Severity Error -ReportSummary -EnableExit
+        Invoke-ScriptAnalyzer -Path ./ -Settings PSGallery -Recurse -Severity ${{ parameters.analyzerSeverity }} -ReportSummary -EnableExit
       displayName: 'Run PowerShell Script Analyzer'
       workingDirectory: '${{ parameters.sourceDirectory }}'
       condition: |
@@ -304,15 +312,6 @@ stages:
         TargetFolder: '$(Build.StagingDirectory)'
         CleanTargetFolder: true
         OverWrite: true
-    - task: CopyFiles@2
-      displayName: 'Copy license to Staging'
-      inputs:
-        Contents: |
-          LICENSE*
-          !**\.gitignore
-        TargetFolder: '$(Build.StagingDirectory)'
-        CleanTargetFolder: false
-        OverWrite: true
     - powershell: |
         Write-Host "Installing 'Bca.Nuget'..."
         Find-Module -Name Bca.Nuget | Install-Module -Scope CurrentUser -Force
@@ -412,20 +411,12 @@ stages:
       inputs:
         artifact: $(Build.BuildNumber)
         path: '$(Pipeline.Workspace)'
-    - ${{ if eq(parameters.psType, 'Script') }}:
-      - powershell: |
-          Remove-Item *.Tests.ps1 -Force
-          Remove-Item LICENSE* -Force
-        displayName: 'Remove unused files from package'
-        workingDirectory: '$(Pipeline.Workspace)'
     - task: NuGetCommand@2
       displayName: 'NuGet Pack'
       inputs:
         command: pack
         packagesToPack: '$(Pipeline.Workspace)/${{ parameters.nugetName }}.nuspec'
         packDestination: '$(Pipeline.Workspace)'
-    - powershell: 'Get-ChildItem -Path $(Pipeline.Workspace) -Recurse'
-      displayName: 'List Package Content'
     - task: NuGetCommand@2
       displayName: 'Push NuGet Package'
       inputs:
